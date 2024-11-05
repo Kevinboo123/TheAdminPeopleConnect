@@ -8,6 +8,7 @@ import UsersManagement from './pages/UsersManagement';
 import Services from './pages/Services';
 import PostManagement from './pages/PostManagement';
 import Sidebar from './components/Sidebar';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const [showLanding, setShowLanding] = useState(true);
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <Router>
+       <ToastContainer />
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/dashboard" element={<PageWithSidebar><Dashboard /></PageWithSidebar>} />
