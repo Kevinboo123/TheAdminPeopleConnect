@@ -1,0 +1,132 @@
+/* postManagementSlider.css */
+
+/* General Body Styles */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif; /* Use a clean, sans-serif font */
+  background-color: #f8f8f8; /* Light background color */
+}
+
+/* Main Container */
+.p-6 {
+  padding: 24px; /* Consistent padding around the main container */
+}
+
+/* Header Styles */
+h1 {
+  font-size: 2rem; /* Larger font size for the header */
+  font-weight: bold; /* Bold header text */
+  color: #ffffff; /* White text color */
+}
+
+/* Post List Styles */
+.bg-white {
+  background-color: #ffffff; /* White background for post list */
+  border-radius: 8px; /* Soft rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Four columns layout for posts */
+  gap: 8px; /* Space between grid items */
+}
+
+.items-center {
+  align-items: center; /* Center items vertically */
+}
+
+/* Post Item Styles */
+.relative {
+  position: relative; /* Positioning context for child elements */
+}
+
+.bg-gray-200 {
+  background-color: #e5e7eb; /* Light gray background for images */
+}
+
+/* Image Slider Styles */
+.image-slider {
+  position: relative; /* Positioning for images */
+}
+
+.image-slider img {
+  transition: transform 0.3s ease; 
+  /* Smooth transition for images */
+}
+
+.image-slider:hover img {
+  transform: scale(1.05); /* Scale image slightly on hover */
+}
+
+/* Dialog Styles */
+.fixed {
+  position: fixed; /* Fixed position for overlay */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50; /* High z-index for overlay */
+}
+
+.bg-black {
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black for overlay */
+}
+
+.bg-white {
+  background-color: #ffffff; /* White background for the dialog */
+  border-radius: 8px; /* Soft rounded corners */
+}
+
+.rounded-lg {
+  border-radius: 8px; /* Consistent border radius */
+}
+
+/* Button Styles */
+button {
+  cursor: pointer; /* Pointer cursor for buttons */
+}
+
+.text-gray-600 {
+  color: #4b5563; /* Gray text color for buttons */
+}
+
+/* Text Styles */
+p {
+  margin: 8px 0; /* Spacing between paragraphs */
+  line-height: 1.5; /* Increase line height for readability */
+}
+
+/* Status Badge Styles */
+.bg-orange-500 {
+  background-color: #f59e0b; /* Orange background for pending status */
+}
+
+.bg-green-500 {
+  background-color: #22c55e; /* Green background for approved status */
+}
+
+.bg-red-500 {
+  background-color: #ef4444; /* Red background for rejected status */
+}
+
+.bg-gray-400 {
+  background-color: #9ca3af; /* Gray background for other statuses */
+}
+
+/* Utility Classes */
+.px-2 {
+  padding-left: 0.5rem; /* Padding for x-axis */
+  padding-right: 0.5rem;
+}
+
+.py-1 {
+  padding-top: 0.25rem; /* Padding for y-axis */
+  padding-bottom: 0.25rem;
+}
+
+.rounded-md {
+  border-radius: 4px; /* Slightly rounded corners for badges */
+}
+
+

@@ -5,7 +5,6 @@ import { ref, onValue } from 'firebase/database';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
-  const [activeTab, setActiveTab] = useState('client');
 
   useEffect(() => {
     const usersRef = ref(database, 'users');
@@ -25,69 +24,35 @@ const UsersManagement = () => {
     });
   }, []);
 
-  const filteredUsers = users.filter(user => 
-    activeTab === 'client' ? user.type === 'client' : user.type === 'provider'
-  );
-
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-[#6B46C1] mb-4">User Information</h2>
-        
-        <div className="flex gap-4 mb-6">
-          <button
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'client'
-                ? 'bg-[#6B46C1] text-white'
-                : 'bg-[#EDE9FE] text-[#6B46C1]'
-            }`}
-            onClick={() => setActiveTab('client')}
-          >
-            Client
-          </button>
-          <button
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'provider'
-                ? 'bg-[#6B46C1] text-white'
-                : 'bg-[#EDE9FE] text-[#6B46C1]'
-            }`}
-            onClick={() => setActiveTab('provider')}
-          >
-            Service Provider
-          </button>
-        </div>
+    <div className="users-management p-6">
+      <h2 className="users-management__title text-2xl font-bold mb-4">User Information</h2>
+      <div className="flex gap-4 mb-6">
+        <button>Client</button>
+        <button>Service Provider</button>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        {filteredUsers.map((user) => (
-          <div 
-            key={user.id} 
-            className="flex items-center justify-between p-4 border-b last:border-b-0"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden">
+      <ul className="users-list">
+        {users.map((user) => (
+          <li key={user.id} className="users-list__item flex items-center justify-between p-3 border-b">
+            <div className="flex items-center">
+              <div className="users-list__avatar w-10 h-10 rounded-full overflow-hidden mr-3">
                 {user.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name} 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
+                  <div className="bg-gray-300 w-full h-full flex items-center justify-center">
+                    <span className="text-gray-500">N/A</span>
                   </div>
                 )}
               </div>
-              <span className="font-medium text-gray-700">{user.name}</span>
+              <span className="users-list__name">{user.name}</span>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">
+            <button className="users-list__more-options" aria-label="more options">
               <MoreVertical size={20} />
             </button>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };
