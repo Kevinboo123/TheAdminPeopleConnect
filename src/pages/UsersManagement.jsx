@@ -5,6 +5,7 @@ import { ref, onValue } from 'firebase/database';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
+  const [userType, setUserType] = useState('Client');
 
   useEffect(() => {
     const usersRef = ref(database, 'users');
@@ -28,8 +29,18 @@ const UsersManagement = () => {
     <div className="users-management p-6">
       <h2 className="users-management__title text-2xl font-bold mb-4">User Information</h2>
       <div className="flex gap-4 mb-6">
-        <button>Client</button>
-        <button>Service Provider</button>
+        <button 
+          onClick={() => setUserType('Client')} 
+          className={userType === 'Client' ? 'active' : ''}
+        >
+          Client
+        </button>
+        <button 
+          onClick={() => setUserType('Service Provider')} 
+          className={userType === 'Service Provider' ? 'active' : ''}
+        >
+          Service Provider
+        </button>
       </div>
 
       <ul className="users-list">

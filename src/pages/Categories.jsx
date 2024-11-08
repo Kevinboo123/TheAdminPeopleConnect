@@ -144,7 +144,7 @@ function Categories() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Categories Offered</h1>
+      <h1 className="text-2xl font-bold text-black">Categories Offered</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories.map((category, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-md relative">

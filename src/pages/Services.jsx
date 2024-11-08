@@ -81,7 +81,7 @@ function Services() {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Services Offered</h1>
+        <h1 className="text-2xl font-bold text-black">Services Offered</h1>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <input
