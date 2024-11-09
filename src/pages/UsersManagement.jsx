@@ -31,21 +31,29 @@ const UsersManagement = () => {
       <div className="flex gap-4 mb-6">
         <button 
           onClick={() => setUserType('Client')} 
-          className={userType === 'Client' ? 'active' : ''}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
+            userType === 'Client' 
+              ? 'bg-violet-800 text-white' 
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
         >
           Client
         </button>
         <button 
           onClick={() => setUserType('Service Provider')} 
-          className={userType === 'Service Provider' ? 'active' : ''}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors duration-200 ${
+            userType === 'Service Provider' 
+              ? 'bg-violet-800 text-white' 
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
         >
           Service Provider
         </button>
       </div>
 
-      <ul className="users-list">
+      <ul className="users-list bg-white rounded-lg shadow">
         {users.map((user) => (
-          <li key={user.id} className="users-list__item flex items-center justify-between p-3 border-b">
+          <li key={user.id} className="users-list__item flex items-center justify-between p-4 border-b last:border-b-0">
             <div className="flex items-center">
               <div className="users-list__avatar w-10 h-10 rounded-full overflow-hidden mr-3">
                 {user.avatar ? (
@@ -56,9 +64,9 @@ const UsersManagement = () => {
                   </div>
                 )}
               </div>
-              <span className="users-list__name">{user.name}</span>
+              <span className="users-list__name font-medium">{user.name}</span>
             </div>
-            <button className="users-list__more-options" aria-label="more options">
+            <button className="users-list__more-options text-gray-500 hover:text-gray-700" aria-label="more options">
               <MoreVertical size={20} />
             </button>
           </li>

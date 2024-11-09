@@ -14,9 +14,9 @@ function Categories() {
   const categoryInputRef = useRef(null);
   const storage = getStorage();
 
-  // Fetch categories from Firebase Realtime Database
+  // Fetch categories from Firebase
   useEffect(() => {
-    const categoriesRef = ref(database, 'category');
+    const categoriesRef = ref(database, 'categories');
     onValue(categoriesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -49,7 +49,7 @@ function Categories() {
 
     try {
       // Check if category already exists
-      const existingCategoryRef = ref(database, `category/${categoryName}`);
+      const existingCategoryRef = ref(database, `categories/${categoryName}`);
       const snapshot = await get(existingCategoryRef);
       if (snapshot.exists()) {
         toast.error('Category already exists. Please choose a different name.');
@@ -75,10 +75,11 @@ function Categories() {
     }
   };
 
+  // Delete category from Firebase
   const handleDeleteCategory = async (categoryName) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
     if (confirmDelete) {
-      const categoryRef = ref(database, `category/${categoryName}`);
+      const categoryRef = ref(database, `categories/${categoryName}`);
       await remove(categoryRef);
       toast.success('Category deleted successfully!');
     }
@@ -122,7 +123,7 @@ function Categories() {
             />
           </div>
 
-          {/* Buttons for adding or canceling */}
+          {/* Buttons */}
           <div className="flex justify-between">
             <button
               className="w-1/2 mr-2 py-3 bg-[#6B46C1] text-white rounded-lg shadow-lg hover:bg-[#553C9A] transition duration-200"
@@ -144,7 +145,7 @@ function Categories() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-black">Categories Offered</h1>
+      <h1 className="text-2xl font-bold text-black">Categories</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {categories.map((category, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-md relative">
