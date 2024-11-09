@@ -31,11 +31,16 @@ function Sidebar() {
               <li key={path}>
                 <Link
                   to={path}
-                  className={`flex items-center space-x-3 p-3 rounded-lg ${
-                    location.pathname === path ? 'bg-violet-800' : 'hover:bg-purple-600'
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200 ${
+                    location.pathname === path 
+                      ? 'bg-purple-600 text-white' 
+                      : 'text-white hover:bg-purple-700'
                   }`}
                 >
-                  <Icon size={20} />
+                  <Icon 
+                    size={20} 
+                    className={location.pathname === path ? 'text-white' : ''}
+                  />
                   <span>{text}</span>
                 </Link>
               </li>
@@ -45,7 +50,7 @@ function Sidebar() {
         {/* Logout Button */}
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-600 mt-auto w-full"
+          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 mt-auto w-full"
         >
           <FiLogOut size={20} />
           <span>Logout</span>

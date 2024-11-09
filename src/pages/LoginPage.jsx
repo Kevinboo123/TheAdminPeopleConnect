@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
+import DashboardLogo from '../assets/DashboardLogo.png'; // Make sure the path is correct
 
 function LoginPage() {
   const [login, setLogin] = useState('');
@@ -13,7 +14,6 @@ function LoginPage() {
     setError('');
 
     if (login === 'admin' && password === '123') {
-      // Login successful
       navigate('/dashboard');
     } else {
       setError('Invalid username or password');
@@ -23,12 +23,15 @@ function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
+        <div className="text-center space-y-4">
+          <img 
+            src={DashboardLogo} 
+            alt="Dashboard Logo" 
+            className="mx-auto h-20 w-auto"
+          />
           <h1 className="text-4xl font-bold text-purple-600">PeopleConnect</h1>
           <p className="text-gray-500">Admin Service Web</p>
         </div>
-        
-        <h2 className="text-2xl font-semibold text-center">Login as an Admin</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
