@@ -9,6 +9,7 @@ import Services from './pages/Services';
 import PostManagement from './pages/PostManagement';
 import Sidebar from './components/Sidebar';
 import { ToastContainer } from 'react-toastify';
+import LogoutPage from './pages/LogoutPage';
 
 function App() {
   const [showLanding, setShowLanding] = useState(true);
@@ -44,6 +45,7 @@ function App() {
         <Route path="/services" element={<PageWithSidebar><Services /></PageWithSidebar>} />
         <Route path="/posts" element={<PageWithSidebar><PostManagement /></PageWithSidebar>} />
         <Route path="/users" element={<PageWithSidebar><UsersManagement /></PageWithSidebar>} />
+        <Route path="/logout" element={<LogoutPage />} />
       </Routes>
     </Router>
   );
