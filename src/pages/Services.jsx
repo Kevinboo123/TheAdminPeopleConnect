@@ -10,182 +10,76 @@ import 'react-toastify/dist/ReactToastify.css';
 function Services() {
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [showAddService, setShowAddService] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const serviceInputRef = useRef(null);
   const storage = getStorage();
 
-  // Fetch both services and categories
+  // Modified to fetch categories and their services
   useEffect(() => {
-    const servicesRef = ref(database, 'services');
     const categoriesRef = ref(database, 'categories');
-
-    Promise.all([
-      get(servicesRef),
-      get(categoriesRef)
-    ]).then(([servicesSnapshot, categoriesSnapshot]) => {
-      const servicesData = servicesSnapshot.val() || {};
-      const categoriesData = categoriesSnapshot.val() || {};
-
-      setCategories(Object.keys(categoriesData).map(key => ({
+    onValue(categoriesRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      
+      // Format categories for dropdown
+      const formattedCategories = Object.keys(data).map(key => ({
         id: key,
-        name: key
-      })));
-
-      const formattedServices = Object.keys(servicesData).map((key) => ({
         name: key,
-        image: servicesData[key].image,
-        categoryId: servicesData[key].categoryId,
-        categoryName: servicesData[key].categoryId ? 
-          categoriesData[servicesData[key].categoryId]?.name || 'Uncategorized' : 
-          'Uncategorized'
+        image: data[key].image
       }));
+      setCategories(formattedCategories);
 
-      setServices(formattedServices);
+      // Format all services from all categories
+      const allServices = [];
+      Object.keys(data).forEach(categoryKey => {
+        if (data[categoryKey].services) {
+          Object.keys(data[categoryKey].services).forEach(serviceKey => {
+            allServices.push({
+              name: serviceKey,
+              ...data[categoryKey].services[serviceKey],
+              categoryName: categoryKey
+            });
+          });
+        }
+      });
+      setServices(allServices);
     });
   }, []);
 
-  // Handle image selection
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-    }
-  };
-
-  // Add new service to Firebase
-  const handleAddService = async () => {
-    const serviceName = serviceInputRef.current.value.trim();
-    if (!serviceName || !selectedImage || !selectedCategory) {
-      toast.error('Please enter a service name, select an image, and choose a category.');
-      return;
-    }
-
-    try {
-      const existingServiceRef = ref(database, `services/${serviceName}`);
-      const snapshot = await get(existingServiceRef);
-      if (snapshot.exists()) {
-        toast.error('Service already exists. Please choose a different name.');
-        return;
-      }
-
-      const imageRef = storageRef(storage, `service_images/${selectedImage.name}`);
-      await uploadBytes(imageRef, selectedImage);
-      const imageUrl = await getDownloadURL(imageRef);
-
-      await set(existingServiceRef, {
-        image: imageUrl,
-        categoryId: selectedCategory
-      });
-
-      serviceInputRef.current.value = '';
-      setSelectedImage(null);
-      setShowAddService(false);
-      toast.success('Service added successfully!');
-    } catch (error) {
-      console.error('Error adding service:', error);
-      toast.error('Failed to add service. Please try again.');
-    }
-  };
-
-  // Delete service from Firebase
-  const handleDeleteService = async (serviceName) => {
+  // Modified to delete service from category
+  const handleDeleteService = async (categoryName, serviceName) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete ${serviceName}?`);
     if (confirmDelete) {
-      const serviceRef = ref(database, `services/${serviceName}`);
-      await remove(serviceRef);
-      toast.success('Service deleted successfully!');
+      try {
+        const serviceRef = ref(database, `categories/${categoryName}/services/${serviceName}`);
+        await remove(serviceRef);
+        toast.success('Service deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting service:', error);
+        toast.error('Failed to delete service. Please try again.');
+      }
     }
   };
-
-  const AddServiceModal = ({ setShowAddService }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
-        <h2 className="text-xl font-semibold text-center text-[#6B46C1] mb-4">ADD SERVICE</h2>
-
-        <div className="space-y-4">
-          {/* Service name input */}
-          <input
-            type="text"
-            placeholder="Enter Service Name"
-            ref={serviceInputRef}
-            className="w-full p-3 border rounded-lg shadow-lg"
-          />
-
-          {/* Image selection */}
-          <div
-            onClick={() => document.getElementById('imageInput').click()}
-            className="w-full h-32 border-2 border-gray-300 rounded-lg shadow-lg flex flex-col items-center justify-center cursor-pointer"
-          >
-            {selectedImage ? (
-              <img src={URL.createObjectURL(selectedImage)} alt="Selected" className="h-full object-contain" />
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="text-[#6B46C1] text-4xl mb-2">
-                  <FaPlus />
-                </div>
-                <span className="text-gray-500">Select Service Image</span>
-              </div>
-            )}
-            <input
-              id="imageInput"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageSelect}
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-between">
-            <button
-              className="w-1/2 mr-2 py-3 bg-[#6B46C1] text-white rounded-lg shadow-lg hover:bg-[#553C9A] transition duration-200"
-              onClick={handleAddService}
-            >
-              Add
-            </button>
-            <button
-              className="w-1/2 ml-2 py-3 bg-gray-300 text-gray-700 rounded-lg shadow-lg hover:bg-gray-400 transition duration-200"
-              onClick={() => setShowAddService(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-black">Services Offered</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {services.map((service, index) => (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-md relative">
+        {services.map((service) => (
+          <div key={service.name} className="bg-white p-6 rounded-lg shadow-md relative">
             <div className="absolute top-2 right-2">
-              <button className="text-red-500 hover:text-red-700" onClick={() => handleDeleteService(service.name)}>
+              <button 
+                className="text-red-500 hover:text-red-700" 
+                onClick={() => handleDeleteService(service.categoryName, service.name)}
+              >
                 <FiTrash2 size={20} />
               </button>
             </div>
             <div className="flex flex-col items-center">
               {service.image && <img src={service.image} alt={service.name} className="w-16 h-16 object-cover" />}
               <h2 className="mt-4 text-center font-semibold">{service.name}</h2>
+              <p className="text-sm text-gray-500">{service.categoryName}</p>
             </div>
           </div>
         ))}
-        <div 
-          className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
-          onClick={() => setShowAddService(true)}
-        >
-          <FaPlus size={40} className="text-gray-400" />
-          <span className="ml-2 text-gray-600 font-semibold">ADD SERVICE</span>
-        </div>
       </div>
-
-      {showAddService && (
-        <AddServiceModal setShowAddService={setShowAddService} />
-      )}
 
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
     </div>
