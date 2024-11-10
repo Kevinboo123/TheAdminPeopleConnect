@@ -9,12 +9,14 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Services() {
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [showAddService, setShowAddService] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const serviceInputRef = useRef(null);
   const storage = getStorage();
 
-  // Fetch services from Firebase
+  // Fetch both services and categories
   useEffect(() => {
     const servicesRef = ref(database, 'services');
     const categoriesRef = ref(database, 'categories');
@@ -26,9 +28,15 @@ function Services() {
       const servicesData = servicesSnapshot.val() || {};
       const categoriesData = categoriesSnapshot.val() || {};
 
+      setCategories(Object.keys(categoriesData).map(key => ({
+        id: key,
+        name: key
+      })));
+
       const formattedServices = Object.keys(servicesData).map((key) => ({
         name: key,
         image: servicesData[key].image,
+        categoryId: servicesData[key].categoryId,
         categoryName: servicesData[key].categoryId ? 
           categoriesData[servicesData[key].categoryId]?.name || 'Uncategorized' : 
           'Uncategorized'
@@ -49,13 +57,12 @@ function Services() {
   // Add new service to Firebase
   const handleAddService = async () => {
     const serviceName = serviceInputRef.current.value.trim();
-    if (!serviceName || !selectedImage) {
-      toast.error('Please enter a service name and select an image.');
+    if (!serviceName || !selectedImage || !selectedCategory) {
+      toast.error('Please enter a service name, select an image, and choose a category.');
       return;
     }
 
     try {
-      // Check if service already exists
       const existingServiceRef = ref(database, `services/${serviceName}`);
       const snapshot = await get(existingServiceRef);
       if (snapshot.exists()) {
@@ -63,15 +70,15 @@ function Services() {
         return;
       }
 
-      // Upload image to Firebase Storage
       const imageRef = storageRef(storage, `service_images/${selectedImage.name}`);
       await uploadBytes(imageRef, selectedImage);
       const imageUrl = await getDownloadURL(imageRef);
 
-      // Add service to Firebase Realtime Database
-      await set(existingServiceRef, { image: imageUrl });
+      await set(existingServiceRef, {
+        image: imageUrl,
+        categoryId: selectedCategory
+      });
 
-      // Reset input and selected image
       serviceInputRef.current.value = '';
       setSelectedImage(null);
       setShowAddService(false);
@@ -164,7 +171,6 @@ function Services() {
             <div className="flex flex-col items-center">
               {service.image && <img src={service.image} alt={service.name} className="w-16 h-16 object-cover" />}
               <h2 className="mt-4 text-center font-semibold">{service.name}</h2>
-              <p className="text-sm text-gray-500">{service.categoryName}</p>
             </div>
           </div>
         ))}

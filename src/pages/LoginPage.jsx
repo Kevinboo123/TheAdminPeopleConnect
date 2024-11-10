@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
-import DashboardLogo from '../assets/DashboardLogo.png'; // Make sure the path is correct
+import dashboardLogo from '../assets/DashBoardLogo.png'; // Make sure the path is correct
 
 function LoginPage() {
   const [login, setLogin] = useState('');
@@ -21,19 +21,17 @@ function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center space-y-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+        <div className="flex justify-center mb-6">
           <img 
-            src={DashboardLogo} 
+            src={dashboardLogo} 
             alt="Dashboard Logo" 
-            className="mx-auto h-20 w-auto"
+            className="h-24 w-auto"
           />
-          <h1 className="text-4xl font-bold text-purple-600">PeopleConnect</h1>
-          <p className="text-gray-500">Admin Service Web</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <User className="absolute top-3 left-3 text-purple-600" size={20} />
             <input
