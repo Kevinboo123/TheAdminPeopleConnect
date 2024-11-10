@@ -10,39 +10,53 @@ import 'react-toastify/dist/ReactToastify.css';
 function Categories() {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showAddSubCategory, setShowAddSubCategory] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const categoryInputRef = useRef(null);
+  const subCategoryInputRef = useRef(null);
   const storage = getStorage();
-  const [showAddService, setShowAddService] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const serviceInputRef = useRef(null);
 
-  // Modified to fetch categories with their services
+  // Modified to fetch categories with sub-categories from Firebase
   useEffect(() => {
-    const categoriesRef = ref(database, 'categories');
+    const categoriesRef = ref(database, 'category');
     onValue(categoriesRef, (snapshot) => {
       const data = snapshot.val() || {};
       const formattedCategories = Object.keys(data).map((key) => ({
         name: key,
         image: data[key].image,
-        services: data[key].services ? Object.keys(data[key].services).map(serviceKey => ({
-          name: serviceKey,
-          ...data[key].services[serviceKey]
+        subCategories: data[key].Sub_Categories ? Object.keys(data[key].Sub_Categories).map(subKey => ({
+          name: subKey,
+          ...data[key].Sub_Categories[subKey]
         })) : []
       }));
       setCategories(formattedCategories);
     });
   }, []);
 
-  // Handle image selection
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
+  // Add handleImageSelect function
+  const handleImageSelect = (file) => {
     if (file) {
       setSelectedImage(file);
     }
   };
 
-  // Add new category to Firebase
+  // Add handleDeleteCategory function
+  const handleDeleteCategory = async (categoryName) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
+    if (confirmDelete) {
+      try {
+        const categoryRef = ref(database, `category/${categoryName}`);
+        await remove(categoryRef);
+        toast.success('Category deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        toast.error('Failed to delete category. Please try again.');
+      }
+    }
+  };
+
+  // Modified to add category with proper structure
   const handleAddCategory = async () => {
     const categoryName = categoryInputRef.current.value.trim();
     if (!categoryName || !selectedImage) {
@@ -51,23 +65,22 @@ function Categories() {
     }
 
     try {
-      // Check if category already exists
-      const existingCategoryRef = ref(database, `categories/${categoryName}`);
+      const existingCategoryRef = ref(database, `category/${categoryName}`);
       const snapshot = await get(existingCategoryRef);
       if (snapshot.exists()) {
         toast.error('Category already exists. Please choose a different name.');
         return;
       }
 
-      // Upload image to Firebase Storage
       const imageRef = storageRef(storage, `category_images/${selectedImage.name}`);
       await uploadBytes(imageRef, selectedImage);
       const imageUrl = await getDownloadURL(imageRef);
 
-      // Add category to Firebase Realtime Database
-      await set(existingCategoryRef, { image: imageUrl });
+      await set(existingCategoryRef, {
+        image: imageUrl,
+        Sub_Categories: {} // Initialize empty sub-categories
+      });
 
-      // Reset input and selected image
       categoryInputRef.current.value = '';
       setSelectedImage(null);
       setShowAddCategory(false);
@@ -78,174 +91,88 @@ function Categories() {
     }
   };
 
-  // Modified to handle category deletion with its services
-  const handleDeleteCategory = async (categoryName) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName} and all its services?`);
-    if (confirmDelete) {
-      try {
-        const categoryRef = ref(database, `categories/${categoryName}`);
-        await remove(categoryRef);
-        toast.success('Category and its services deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        toast.error('Failed to delete category. Please try again.');
-      }
-    }
-  };
-
-  // Add service handling
-  const handleAddService = async () => {
-    const serviceName = serviceInputRef.current.value.trim();
-    if (!serviceName || !selectedImage || !selectedCategory) {
-      toast.error('Please enter a service name and select an image.');
+  // Modified handleAddSubCategory to fix the name handling
+  const handleAddSubCategory = async () => {
+    const subCategoryName = subCategoryInputRef.current.value.trim();
+    if (!subCategoryName || !selectedImage || !selectedCategory) {
+      toast.error('Please enter a sub-category name and select an image.');
       return;
     }
 
     try {
-      // Check if service already exists in the category
-      const serviceRef = ref(database, `categories/${selectedCategory}/services/${serviceName}`);
-      const snapshot = await get(serviceRef);
+      // Create a URL-friendly version of the name for the key
+      const subCategoryKey = subCategoryName.toLowerCase().replace(/\s+/g, '');
+      const subCategoryRef = ref(database, `category/${selectedCategory}/Sub_Categories/${subCategoryKey}`);
+      
+      const snapshot = await get(subCategoryRef);
       if (snapshot.exists()) {
-        toast.error('Service already exists in this category. Please choose a different name.');
+        toast.error('Sub-category already exists. Please choose a different name.');
         return;
       }
 
-      // Upload image
-      const imageRef = storageRef(storage, `service_images/${selectedImage.name}`);
+      const imageRef = storageRef(storage, `subcategory_images/${selectedImage.name}`);
       await uploadBytes(imageRef, selectedImage);
       const imageUrl = await getDownloadURL(imageRef);
 
-      // Add service under category
-      await set(serviceRef, {
+      await set(subCategoryRef, {
+        name: subCategoryName, // Store the original name
         image: imageUrl
       });
 
-      serviceInputRef.current.value = '';
+      subCategoryInputRef.current.value = '';
       setSelectedImage(null);
-      setShowAddService(false);
-      toast.success('Service added successfully!');
+      setShowAddSubCategory(false);
+      setSelectedCategory(null);
+      toast.success('Sub-category added successfully!');
     } catch (error) {
-      console.error('Error adding service:', error);
-      toast.error('Failed to add service. Please try again.');
+      console.error('Error adding sub-category:', error);
+      toast.error('Failed to add sub-category. Please try again.');
     }
   };
 
-  // Add Service Modal Component
-  const AddServiceModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
-        <h2 className="text-xl font-semibold text-center text-[#6B46C1] mb-4">
-          Add Service to {selectedCategory}
-        </h2>
-        <div className="space-y-4">
+  // Add Category Modal Component
+  function AddCategoryModal({ onClose, onAdd, categoryInputRef, selectedImage, handleImageSelect }) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
           <input
-            type="text"
-            placeholder="Enter Service Name"
-            ref={serviceInputRef}
-            className="w-full p-3 border rounded-lg shadow-lg"
-          />
-
-          <div
-            onClick={() => document.getElementById('serviceImageInput').click()}
-            className="w-full h-32 border-2 border-gray-300 rounded-lg shadow-lg flex flex-col items-center justify-center cursor-pointer"
-          >
-            {selectedImage ? (
-              <img src={URL.createObjectURL(selectedImage)} alt="Selected" className="h-full object-contain" />
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="text-[#6B46C1] text-4xl mb-2">
-                  <FaPlus />
-                </div>
-                <span className="text-gray-500">Select Service Image</span>
-              </div>
-            )}
-            <input
-              id="serviceImageInput"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageSelect}
-            />
-          </div>
-
-          <div className="flex justify-between">
-            <button
-              className="w-1/2 mr-2 py-3 bg-[#6B46C1] text-white rounded-lg shadow-lg hover:bg-[#553C9A] transition duration-200"
-              onClick={handleAddService}
-            >
-              Add
-            </button>
-            <button
-              className="w-1/2 ml-2 py-3 bg-gray-300 text-gray-700 rounded-lg shadow-lg hover:bg-gray-400 transition duration-200"
-              onClick={() => setShowAddService(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const AddCategoryModal = ({ 
-    onClose, 
-    onAdd, 
-    categoryInputRef, 
-    selectedImage, 
-    handleImageSelect 
-  }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
-        <h2 className="text-xl font-semibold text-center text-[#6B46C1] mb-4">ADD CATEGORY</h2>
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Enter Category Name"
             ref={categoryInputRef}
-            className="w-full p-3 border rounded-lg shadow-lg"
+            type="text"
+            placeholder="Enter category name"
+            className="w-full p-2 border rounded mb-4"
           />
-
-          <div
-            onClick={() => document.getElementById('categoryImageInput').click()}
-            className="w-full h-32 border-2 border-gray-300 rounded-lg shadow-lg flex flex-col items-center justify-center cursor-pointer"
-          >
-            {selectedImage ? (
-              <img src={URL.createObjectURL(selectedImage)} alt="Selected" className="h-full object-contain" />
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="text-[#6B46C1] text-4xl mb-2">
-                  <FaPlus />
-                </div>
-                <span className="text-gray-500">Select Category Image</span>
-              </div>
-            )}
-            <input
-              id="categoryImageInput"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageSelect}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageSelect(e.target.files[0])}
+            className="w-full mb-4"
+          />
+          {selectedImage && (
+            <img
+              src={URL.createObjectURL(selectedImage)}
+              alt="Selected"
+              className="w-32 h-32 object-cover rounded mb-4"
             />
-          </div>
-
-          <div className="flex justify-between">
+          )}
+          <div className="flex justify-end space-x-4">
             <button
-              className="w-1/2 mr-2 py-3 bg-[#6B46C1] text-white rounded-lg shadow-lg hover:bg-[#553C9A] transition duration-200"
-              onClick={onAdd}
-            >
-              Add
-            </button>
-            <button
-              className="w-1/2 ml-2 py-3 bg-gray-300 text-gray-700 rounded-lg shadow-lg hover:bg-gray-400 transition duration-200"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
               onClick={onClose}
             >
               Cancel
             </button>
+            <button
+              className="px-4 py-2 bg-[#6B46C1] text-white rounded hover:bg-[#553C9A]"
+              onClick={onAdd}
+            >
+              Add Category
+            </button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="p-6">
@@ -259,15 +186,16 @@ function Categories() {
                 <h2 className="ml-4 text-xl font-semibold">{category.name}</h2>
               </div>
               <div className="flex items-center space-x-4">
-                {/* Add Service Button */}
+                {/* Add Sub-Category Button */}
                 <button 
-                  className="text-[#6B46C1] hover:text-[#553C9A]"
+                  className="text-[#6B46C1] hover:text-[#553C9A] flex items-center"
                   onClick={() => {
                     setSelectedCategory(category.name);
-                    setShowAddService(true);
+                    setShowAddSubCategory(true);
                   }}
                 >
                   <FaPlus size={20} />
+                  <span className="ml-2">Add Sub-Category</span>
                 </button>
                 {/* Delete Category Button */}
                 <button 
@@ -278,10 +206,36 @@ function Categories() {
                 </button>
               </div>
             </div>
-            {/* Display service count */}
-            <p className="text-sm text-gray-500 mt-2">
-              Services: {category.services?.length || 0}
-            </p>
+
+            {/* Display Sub-Categories */}
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Sub Categories</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {category.subCategories && category.subCategories.map((subCategory, subIndex) => (
+                  <div 
+                    key={subIndex} 
+                    className="bg-gray-50 p-4 rounded-lg flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-3">
+                      {subCategory.image && (
+                        <img 
+                          src={subCategory.image} 
+                          alt={subCategory.name} 
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      )}
+                      <span className="font-medium">{subCategory.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {(!category.subCategories || category.subCategories.length === 0) && (
+                <p className="text-sm text-gray-500 mt-2">
+                  No sub-categories added yet
+                </p>
+              )}
+            </div>
           </div>
         ))}
 
@@ -305,8 +259,64 @@ function Categories() {
           handleImageSelect={handleImageSelect}
         />
       )}
-      {showAddService && <AddServiceModal />}
+      {showAddSubCategory && (
+        <AddSubCategoryModal
+          onClose={() => {
+            setShowAddSubCategory(false);
+            setSelectedCategory(null);
+          }}
+          onAdd={handleAddSubCategory}
+          subCategoryInputRef={subCategoryInputRef}
+          selectedImage={selectedImage}
+          handleImageSelect={handleImageSelect}
+          categoryName={selectedCategory}
+        />
+      )}
       <ToastContainer position="top-center" autoClose={3000} />
+    </div>
+  );
+}
+
+// Add Sub-Category Modal Component
+function AddSubCategoryModal({ onClose, onAdd, subCategoryInputRef, selectedImage, handleImageSelect, categoryName }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-xl font-semibold mb-4">Add Sub-Category to {categoryName}</h2>
+        <input
+          ref={subCategoryInputRef}
+          type="text"
+          placeholder="Enter sub-category name"
+          className="w-full p-2 border rounded mb-4"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleImageSelect(e.target.files[0])}
+          className="w-full mb-4"
+        />
+        {selectedImage && (
+          <img
+            src={URL.createObjectURL(selectedImage)}
+            alt="Selected"
+            className="w-32 h-32 object-cover rounded mb-4"
+          />
+        )}
+        <div className="flex justify-end space-x-4">
+          <button
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-[#6B46C1] text-white rounded hover:bg-[#553C9A]"
+            onClick={onAdd}
+          >
+            Add Sub-Category
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
