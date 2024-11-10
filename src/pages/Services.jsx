@@ -17,17 +17,24 @@ function Services() {
   // Fetch services from Firebase
   useEffect(() => {
     const servicesRef = ref(database, 'services');
-    onValue(servicesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const formattedServices = Object.keys(data).map((key) => ({
-          name: key,
-          image: data[key].image,
-        }));
-        setServices(formattedServices);
-      } else {
-        setServices([]);
-      }
+    const categoriesRef = ref(database, 'categories');
+
+    Promise.all([
+      get(servicesRef),
+      get(categoriesRef)
+    ]).then(([servicesSnapshot, categoriesSnapshot]) => {
+      const servicesData = servicesSnapshot.val() || {};
+      const categoriesData = categoriesSnapshot.val() || {};
+
+      const formattedServices = Object.keys(servicesData).map((key) => ({
+        name: key,
+        image: servicesData[key].image,
+        categoryName: servicesData[key].categoryId ? 
+          categoriesData[servicesData[key].categoryId]?.name || 'Uncategorized' : 
+          'Uncategorized'
+      }));
+
+      setServices(formattedServices);
     });
   }, []);
 
@@ -157,6 +164,7 @@ function Services() {
             <div className="flex flex-col items-center">
               {service.image && <img src={service.image} alt={service.name} className="w-16 h-16 object-cover" />}
               <h2 className="mt-4 text-center font-semibold">{service.name}</h2>
+              <p className="text-sm text-gray-500">{service.categoryName}</p>
             </div>
           </div>
         ))}

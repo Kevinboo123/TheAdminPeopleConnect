@@ -46,7 +46,16 @@ function Dashboard() {
 
   const handleProfileUpdate = (e) => {
     e.preventDefault();
-    // Handle profile update logic here
+    
+    // Update the profile data in state
+    setProfileData({
+      ...profileData,
+      name: e.target.name.value,
+      email: e.target.email.value,
+      phone: e.target.phone.value
+    });
+
+    // Close the modal
     setShowProfileModal(false);
   };
 
@@ -170,8 +179,8 @@ function Dashboard() {
                 className="w-10 h-10 rounded-full border-2 border-violet-600"
               />
               <div className="hidden md:block text-left">
-                <p className="text-sm font-semibold">Kevin Apiag</p>
-                <p className="text-xs text-gray-500">Admin</p>
+                <p className="text-sm font-semibold">{profileData.name}</p>
+                <p className="text-xs text-gray-500">{profileData.role}</p>
               </div>
             </button>
 
@@ -211,8 +220,8 @@ function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                    name="name"
+                    defaultValue={profileData.name}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-violet-600"
                   />
                 </div>
@@ -222,8 +231,8 @@ function Dashboard() {
                   </label>
                   <input
                     type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                    name="email"
+                    defaultValue={profileData.email}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-violet-600"
                   />
                 </div>
@@ -233,8 +242,8 @@ function Dashboard() {
                   </label>
                   <input
                     type="tel"
-                    value={profileData.phone}
-                    onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                    name="phone"
+                    defaultValue={profileData.phone}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-violet-600"
                   />
                 </div>

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiGrid, FiFileText, FiSettings, FiUser, FiHeart, FiLogOut } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiSettings, FiUser, FiHeart, FiLogOut, FiChevronRight } from 'react-icons/fi';
 import dashboardlogo from '../assets/DashBoardLogo.png';
 
 function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
@@ -15,12 +16,25 @@ function Sidebar() {
 
   return (
     <>
-      <div className="w-64 bg-violet-800 text-white p-6 h-screen flex flex-col">
-        <div className="flex justify-center mb-8">
-          <img src={dashboardlogo} alt="Project Logo" className="w-24 h-24" />
+      <div 
+        className={`${
+          isExpanded ? 'w-64' : 'w-20'
+        } bg-violet-800 text-white h-screen flex flex-col fixed transition-all duration-300 ease-in-out`}
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+      >
+        <div className={`flex justify-center py-6 ${isExpanded ? 'px-6' : 'px-2'}`}>
+          <img 
+            src={dashboardlogo} 
+            alt="Project Logo" 
+            className={`transition-all duration-300 ${
+              isExpanded ? 'w-24 h-24' : 'w-12 h-12'
+            }`}
+          />
         </div>
+        
         <nav className="flex-grow">
-          <ul className="space-y-4">
+          <ul className="space-y-2">
             {[ 
               { path: '/dashboard', icon: FiGrid, text: 'Dashboard' },
               { path: '/categories', icon: FiFileText, text: 'Categories Management' },
@@ -31,30 +45,54 @@ function Sidebar() {
               <li key={path}>
                 <Link
                   to={path}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-colors duration-200 ${
+                  className={`flex items-center ${
+                    isExpanded ? 'px-6' : 'px-4'
+                  } py-3 transition-colors duration-200 ${
                     location.pathname === path 
                       ? 'bg-purple-600 text-white' 
                       : 'text-white hover:bg-purple-700'
                   }`}
                 >
-                  <Icon 
-                    size={20} 
-                    className={location.pathname === path ? 'text-white' : ''}
-                  />
-                  <span>{text}</span>
+                  <Icon size={20} />
+                  <span className={`ml-3 transition-opacity duration-300 ${
+                    isExpanded ? 'opacity-100' : 'opacity-0 w-0'
+                  }`}>
+                    {text}
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
+
         {/* Logout Button */}
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 mt-auto w-full"
+          className={`flex items-center ${
+            isExpanded ? 'px-6' : 'px-4'
+          } py-3 hover:bg-purple-700 transition-colors duration-200 mb-6`}
         >
           <FiLogOut size={20} />
-          <span>Logout</span>
+          <span className={`ml-3 transition-opacity duration-300 ${
+            isExpanded ? 'opacity-100' : 'opacity-0 w-0'
+          }`}>
+            Logout
+          </span>
         </button>
+
+        {/* Expand/Collapse Indicator */}
+        <div className={`absolute -right-3 top-1/2 transform -translate-y-1/2 transition-transform duration-300 ${
+          isExpanded ? 'rotate-180' : ''
+        }`}>
+          <div className="bg-purple-600 rounded-full p-1">
+            <FiChevronRight className="text-white" size={16} />
+          </div>
+        </div>
+      </div>
+
+      {/* Content Margin */}
+      <div className={`${isExpanded ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+        {/* Your main content goes here */}
       </div>
 
       {/* Logout Modal */}
