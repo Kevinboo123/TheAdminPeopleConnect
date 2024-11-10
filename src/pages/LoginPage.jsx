@@ -21,7 +21,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <div className="flex justify-center mb-6">
           <img 
@@ -31,6 +31,10 @@ function LoginPage() {
           />
         </div>
         
+        <h1 className="text-center text-black text-2xl font-bold mb-4 bold_poppins">PEOPLE CONNECT</h1>
+        
+        <p className="text-center text-purple-600 text-sm mb-4 bold_poppins">ADMIN</p>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <User className="absolute top-3 left-3 text-purple-600" size={20} />
@@ -39,7 +43,7 @@ function LoginPage() {
               placeholder="Login"
               value={login}
               onChange={(e) => setLogin(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 bold_poppins"
             />
           </div>
           
@@ -50,15 +54,15 @@ function LoginPage() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 bold_poppins"
             />
           </div>
           
-          {error && <p className="text-red-500 text-center">{error}</p>}
+          {error && <p className="text-red-500 text-center bold_poppins">{error}</p>}
           
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50"
+            className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50 bold_poppins"
           >
             Login
           </button>
