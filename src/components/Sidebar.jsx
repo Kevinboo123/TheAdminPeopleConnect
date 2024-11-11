@@ -53,7 +53,9 @@ function Sidebar() {
                       : 'text-white hover:bg-purple-700'
                   }`}
                 >
-                  <Icon size={20} />
+                  <div className="flex items-center justify-center w-10 h-10">
+                    <Icon size={20} />
+                  </div>
                   <span className={`ml-3 transition-opacity duration-300 ${
                     isExpanded ? 'opacity-100' : 'opacity-0 w-0'
                   }`}>
@@ -72,7 +74,9 @@ function Sidebar() {
             isExpanded ? 'px-6' : 'px-4'
           } py-3 hover:bg-purple-700 transition-colors duration-200 mb-6`}
         >
-          <FiLogOut size={20} />
+          <div className="flex items-center justify-center w-10 h-10">
+            <FiLogOut size={20} />
+          </div>
           <span className={`ml-3 transition-opacity duration-300 ${
             isExpanded ? 'opacity-100' : 'opacity-0 w-0'
           }`}>

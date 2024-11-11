@@ -7,19 +7,22 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Services() {
   const [subCategories, setSubCategories] = useState([]);
-  const [filter, setFilter] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); // State for selected category
   const [showModal, setShowModal] = useState(false);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [categories, setCategories] = useState([]); // State for categories
 
-  // Fetch all sub-categories
+  // Fetch all categories and sub-categories
   useEffect(() => {
     const categoryRef = ref(database, 'category');
     onValue(categoryRef, (snapshot) => {
       const data = snapshot.val() || {};
       const allSubCategories = [];
-      
-      // Flatten all sub-categories into a single array
+      const allCategories = [];
+
+      // Flatten all sub-categories into a single array and collect categories
       Object.keys(data).forEach((categoryKey) => {
+        allCategories.push(categoryKey); // Collect category names
         const category = data[categoryKey];
         if (category['Sub Categories']) {
           Object.entries(category['Sub Categories']).forEach(([subKey, value]) => {
@@ -32,8 +35,9 @@ function Services() {
           });
         }
       });
-      
+
       setSubCategories(allSubCategories);
+      setCategories(allCategories); // Set categories state
     });
   }, []);
 
@@ -53,23 +57,26 @@ function Services() {
     }
   };
 
-  // Filtered sub-categories based on the filter input
-  const filteredSubCategories = subCategories.filter(subCategory =>
-    subCategory.categoryName.toLowerCase().includes(filter.toLowerCase())
-  );
+  // Filtered sub-categories based on the selected category
+  const filteredSubCategories = selectedCategory
+    ? subCategories.filter(subCategory => subCategory.categoryName === selectedCategory)
+    : subCategories; // Show all if no category is selected
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-black mb-6">Sub-Categories Management</h1>
       
-      {/* Filter Input */}
-      <input
-        type="text"
-        placeholder="Filter..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+      {/* Category Selection Dropdown */}
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
         className="mb-4 p-1 border rounded w-1/4"
-      />
+      >
+        <option value="">All Categories</option> {/* Option for all categories */}
+        {categories.map((category, index) => (
+          <option key={index} value={category}>{category}</option>
+        ))}
+      </select>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {filteredSubCategories.map((subCategory, index) => (

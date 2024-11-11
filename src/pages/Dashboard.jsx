@@ -31,7 +31,8 @@ function Dashboard() {
     name: 'Kevin Apiag',
     email: 'kevin.apiag@example.com',
     phone: '+1234567890',
-    role: 'Admin'
+    role: 'Admin',
+    image: '/path/to/your/image.png' // Update this path to your admin profile image
   });
 
   const handleProfileClick = () => {
@@ -57,6 +58,17 @@ function Dashboard() {
 
     // Close the modal
     setShowProfileModal(false);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // Create a URL for the selected image
+      setProfileData({
+        ...profileData,
+        image: imageUrl // Update the image in profileData
+      });
+    }
   };
 
   const handleSettingsUpdate = (e) => {
@@ -166,15 +178,13 @@ function Dashboard() {
               </div>
             )}
           </div>
-
-          {/* Profile Section */}
           <div className="relative">
             <button 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-3 focus:outline-none"
             >
               <img 
-                src="https://via.placeholder.com/40" 
+                src={profileData.image} // Use the image from profileData
                 alt="User" 
                 className="w-10 h-10 rounded-full border-2 border-violet-600"
               />
@@ -244,6 +254,17 @@ function Dashboard() {
                     type="tel"
                     name="phone"
                     defaultValue={profileData.phone}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-violet-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile Image
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-violet-600"
                   />
                 </div>
