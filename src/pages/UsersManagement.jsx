@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MoreVertical, Trash2 } from 'react-feather';
 import { database } from '../firebase/firebaseConfig';
-import { ref, onValue, remove } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,6 +28,7 @@ const UsersManagement = () => {
               phoneNumber: userData.phoneNumber || 'No Phone',
               profileImageUrl: userData.profileImageUrl || null,
               userType: 'client',
+              status: userData.status || 'active',
             });
           }
         });
@@ -51,10 +52,10 @@ const UsersManagement = () => {
             phoneNumber: userData.phoneNumber || 'No Phone',
             profileImageUrl: userData.profileImageUrl || null,
             userType: 'service provider',
-            // Add any service provider specific fields
             services: userData.services || [],
             rating: userData.rating || 0,
             reviews: userData.reviews || [],
+            status: userData.status || 'active',
           });
         });
         setServiceProviders(providersArray);
@@ -66,20 +67,21 @@ const UsersManagement = () => {
   // Get the appropriate array based on selected user type
   const displayUsers = userType === 'client' ? clients : serviceProviders;
 
-  const handleRemoveUser = async (user) => {
+  const handleToggleUserStatus = async (user) => {
     try {
       const path = user.userType === 'client' ? 'users' : 'serviceProviders';
       const userRef = ref(database, `${path}/${user.id}`);
       
       // Show confirmation dialog
-      if (window.confirm(`Are you sure you want to remove ${user.name}?`)) {
-        await remove(userRef);
-        toast.success(`${user.name} has been removed successfully`);
-        setShowMenu(null); // Close the menu after removal
+      const newStatus = user.status === 'active' ? 'disabled' : 'active';
+      if (window.confirm(`Are you sure you want to ${newStatus === 'disabled' ? 'disable' : 'enable'} ${user.name}?`)) {
+        await update(userRef, { status: newStatus });
+        toast.success(`${user.name} has been ${newStatus === 'disabled' ? 'disabled' : 'enabled'} successfully`);
+        setShowMenu(null); // Close the menu after status change
       }
     } catch (error) {
-      console.error('Error removing user:', error);
-      toast.error('Failed to remove user');
+      console.error('Error toggling user status:', error);
+      toast.error('Failed to change user status');
     }
   };
 
@@ -145,11 +147,13 @@ const UsersManagement = () => {
                 {showMenu === user.id && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                     <button
-                      onClick={() => handleRemoveUser(user)}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      onClick={() => handleToggleUserStatus(user)}
+                      className={`flex items-center w-full px-4 py-2 text-sm ${
+                        user.status === 'active' ? 'text-red-600 hover:bg-red-50' : 'text-purple-600 hover:bg-purple-50'
+                      }`}
                     >
                       <Trash2 size={16} className="mr-2" />
-                      Remove User
+                      {user.status === 'active' ? 'Disable User' : 'Enable User'}
                     </button>
                   </div>
                 )}

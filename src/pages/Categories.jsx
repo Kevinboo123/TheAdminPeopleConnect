@@ -11,13 +11,15 @@ function Categories() {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddSubCategory, setShowAddSubCategory] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const categoryInputRef = useRef(null);
   const subCategoryInputRef = useRef(null);
   const storage = getStorage();
 
-  // Modified to fetch categories with sub-categories from Firebase
+  // Fetch categories from Firebase
   useEffect(() => {
     const categoriesRef = ref(database, 'category');
     onValue(categoriesRef, (snapshot) => {
@@ -25,38 +27,45 @@ function Categories() {
       const formattedCategories = Object.keys(data).map((key) => ({
         name: key,
         image: data[key].image,
-        subCategories: data[key].Sub_Categories ? Object.keys(data[key].Sub_Categories).map(subKey => ({
+        subCategories: data[key]['Sub Categories'] ? Object.keys(data[key]['Sub Categories']).map(subKey => ({
           name: subKey,
-          ...data[key].Sub_Categories[subKey]
+          ...data[key]['Sub Categories'][subKey]
         })) : []
       }));
       setCategories(formattedCategories);
     });
   }, []);
 
-  // Add handleImageSelect function
+  // Handle image selection
   const handleImageSelect = (file) => {
     if (file) {
       setSelectedImage(file);
     }
   };
 
-  // Add handleDeleteCategory function
-  const handleDeleteCategory = async (categoryName) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
-    if (confirmDelete) {
+  // Show delete confirmation modal
+  const handleDeleteCategory = (categoryName) => {
+    setCategoryToDelete(categoryName);
+    setShowDeleteConfirm(true);
+  };
+
+  // Confirm deletion of category
+  const confirmDeleteCategory = async () => {
+    if (categoryToDelete) {
       try {
-        const categoryRef = ref(database, `category/${categoryName}`);
+        const categoryRef = ref(database, `category/${categoryToDelete}`);
         await remove(categoryRef);
         toast.success('Category deleted successfully!');
       } catch (error) {
         console.error('Error deleting category:', error);
         toast.error('Failed to delete category. Please try again.');
       }
+      setShowDeleteConfirm(false);
+      setCategoryToDelete(null);
     }
   };
 
-  // Modified to add category with proper structure
+  // Add category
   const handleAddCategory = async () => {
     const categoryName = categoryInputRef.current.value.trim();
     if (!categoryName || !selectedImage) {
@@ -78,7 +87,7 @@ function Categories() {
 
       await set(existingCategoryRef, {
         image: imageUrl,
-        Sub_Categories: {} // Initialize empty sub-categories
+        'Sub Categories': {}
       });
 
       categoryInputRef.current.value = '';
@@ -91,7 +100,7 @@ function Categories() {
     }
   };
 
-  // Modified handleAddSubCategory to fix the name handling
+  // Add Sub-Category
   const handleAddSubCategory = async () => {
     const subCategoryName = subCategoryInputRef.current.value.trim();
     if (!subCategoryName || !selectedImage || !selectedCategory) {
@@ -100,9 +109,8 @@ function Categories() {
     }
 
     try {
-      // Create a URL-friendly version of the name for the key
       const subCategoryKey = subCategoryName.toLowerCase().replace(/\s+/g, '');
-      const subCategoryRef = ref(database, `category/${selectedCategory}/Sub_Categories/${subCategoryKey}`);
+      const subCategoryRef = ref(database, `category/${selectedCategory}/Sub Categories/${subCategoryKey}`);
       
       const snapshot = await get(subCategoryRef);
       if (snapshot.exists()) {
@@ -115,7 +123,7 @@ function Categories() {
       const imageUrl = await getDownloadURL(imageRef);
 
       await set(subCategoryRef, {
-        name: subCategoryName, // Store the original name
+        name: subCategoryName,
         image: imageUrl
       });
 
@@ -174,6 +182,32 @@ function Categories() {
     );
   }
 
+  // Delete Confirmation Modal Component
+  function DeleteConfirmationModal({ onClose, onConfirm, categoryName }) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 className="text-xl font-semibold mb-4">Confirm Deletion</h2>
+          <p>Are you sure you want to delete the category "{categoryName}"?</p>
+          <div className="flex justify-end space-x-4 mt-4">
+            <button
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              onClick={onConfirm}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-black mb-6">Categories</h1>
@@ -199,7 +233,7 @@ function Categories() {
                 </button>
                 {/* Delete Category Button */}
                 <button 
-                  className="text-red-500 hover:text-red-700"
+                  className="text-purple-600 hover:text-purple-700"
                   onClick={() => handleDeleteCategory(category.name)}
                 >
                   <FiTrash2 size={20} />
@@ -270,6 +304,13 @@ function Categories() {
           selectedImage={selectedImage}
           handleImageSelect={handleImageSelect}
           categoryName={selectedCategory}
+        />
+      )}
+      {showDeleteConfirm && (
+        <DeleteConfirmationModal
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={confirmDeleteCategory}
+          categoryName={categoryToDelete}
         />
       )}
       <ToastContainer position="top-center" autoClose={3000} />
