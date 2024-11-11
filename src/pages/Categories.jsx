@@ -17,7 +17,7 @@ function Categories() {
   const subCategoryInputRef = useRef(null);
   const storage = getStorage();
 
-  // Modified to fetch categories with sub-categories from Firebase
+  // Fetch categories with sub-categories from Firebase
   useEffect(() => {
     const categoriesRef = ref(database, 'category');
     onValue(categoriesRef, (snapshot) => {
@@ -34,14 +34,14 @@ function Categories() {
     });
   }, []);
 
-  // Add handleImageSelect function
+  // Handle image selection
   const handleImageSelect = (file) => {
     if (file) {
       setSelectedImage(file);
     }
   };
 
-  // Add handleDeleteCategory function
+  // Handle category deletion
   const handleDeleteCategory = async (categoryName) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
     if (confirmDelete) {
@@ -56,7 +56,7 @@ function Categories() {
     }
   };
 
-  // Modified to add category with proper structure
+  // Handle adding a category
   const handleAddCategory = async () => {
     const categoryName = categoryInputRef.current.value.trim();
     if (!categoryName || !selectedImage) {
@@ -91,7 +91,7 @@ function Categories() {
     }
   };
 
-  // Modified handleAddSubCategory to fix the name handling
+  // Handle adding a sub-category
   const handleAddSubCategory = async () => {
     const subCategoryName = subCategoryInputRef.current.value.trim();
     if (!subCategoryName || !selectedImage || !selectedCategory) {
@@ -100,7 +100,6 @@ function Categories() {
     }
 
     try {
-      // Create a URL-friendly version of the name for the key
       const subCategoryKey = subCategoryName.toLowerCase().replace(/\s+/g, '');
       const subCategoryRef = ref(database, `category/${selectedCategory}/Sub Categories/${subCategoryKey}`);
       
@@ -122,7 +121,6 @@ function Categories() {
       subCategoryInputRef.current.value = '';
       setSelectedImage(null);
       setShowAddSubCategory(false);
-      setSelectedCategory(null);
       toast.success('Sub-category added successfully!');
     } catch (error) {
       console.error('Error adding sub-category:', error);
@@ -130,56 +128,12 @@ function Categories() {
     }
   };
 
-  // Add Category Modal Component
-  function AddCategoryModal({ onClose, onAdd, categoryInputRef, selectedImage, handleImageSelect }) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
-          <input
-            ref={categoryInputRef}
-            type="text"
-            placeholder="Enter category name"
-            className="w-full p-2 border rounded mb-4"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageSelect(e.target.files[0])}
-            className="w-full mb-4"
-          />
-          {selectedImage && (
-            <img
-              src={URL.createObjectURL(selectedImage)}
-              alt="Selected"
-              className="w-32 h-32 object-cover rounded mb-4"
-            />
-          )}
-          <div className="flex justify-end space-x-4">
-            <button
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-[#6B46C1] text-white rounded hover:bg-[#553C9A]"
-              onClick={onAdd}
-            >
-              Add Category
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 bg-purple-600 min-h-screen">
-      <h1 className="text-2xl font-bold text-white mb-6">Categories</h1>
+    <div className="p-6 bg-white min-h-screen">
+      <h1 className="text-2xl font-bold text-black mb-6">Categories</h1>
       <div className="space-y-8">
         {categories.map((category, index) => (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+          <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <img src={category.image} alt={category.name} className="w-16 h-16 object-cover rounded-lg" />
@@ -214,7 +168,7 @@ function Categories() {
                 {category.subCategories && category.subCategories.map((subCategory, subIndex) => (
                   <div 
                     key={subIndex} 
-                    className="bg-gray-50 p-4 rounded-lg flex items-center justify-between"
+                    className="bg-purple-100 p-4 rounded-lg flex items-center justify-between shadow-lg"
                   >
                     <div className="flex items-center space-x-3">
                       {subCategory.image && (
