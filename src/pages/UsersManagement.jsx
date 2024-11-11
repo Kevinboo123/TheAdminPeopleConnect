@@ -10,6 +10,8 @@ const UsersManagement = () => {
   const [serviceProviders, setServiceProviders] = useState([]);
   const [userType, setUserType] = useState('client');
   const [showMenu, setShowMenu] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     // Fetch clients from 'users' node
@@ -67,18 +69,19 @@ const UsersManagement = () => {
   // Get the appropriate array based on selected user type
   const displayUsers = userType === 'client' ? clients : serviceProviders;
 
-  const handleToggleUserStatus = async (user) => {
+  const handleToggleUserStatus = async () => {
+    if (!selectedUser) return;
+
     try {
-      const path = user.userType === 'client' ? 'users' : 'serviceProviders';
-      const userRef = ref(database, `${path}/${user.id}`);
+      const path = selectedUser.userType === 'client' ? 'users' : 'serviceProviders';
+      const userRef = ref(database, `${path}/${selectedUser.id}`);
       
-      // Show confirmation dialog
-      const newStatus = user.status === 'active' ? 'disabled' : 'active';
-      if (window.confirm(`Are you sure you want to ${newStatus === 'disabled' ? 'disable' : 'enable'} ${user.name}?`)) {
-        await update(userRef, { status: newStatus });
-        toast.success(`${user.name} has been ${newStatus === 'disabled' ? 'disabled' : 'enabled'} successfully`);
-        setShowMenu(null); // Close the menu after status change
-      }
+      // Update user status
+      const newStatus = selectedUser.status === 'active' ? 'disabled' : 'active';
+      await update(userRef, { status: newStatus });
+      toast.success(`${selectedUser.name} has been ${newStatus === 'disabled' ? 'disabled' : 'enabled'} successfully`);
+      setShowModal(false); // Close the modal after status change
+      setShowMenu(null); // Close the menu after status change
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error('Failed to change user status');
@@ -147,7 +150,10 @@ const UsersManagement = () => {
                 {showMenu === user.id && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                     <button
-                      onClick={() => handleToggleUserStatus(user)}
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setShowModal(true);
+                      }}
                       className={`flex items-center w-full px-4 py-2 text-sm ${
                         user.status === 'active' ? 'text-red-600 hover:bg-red-50' : 'text-purple-600 hover:bg-purple-50'
                       }`}
@@ -166,7 +172,32 @@ const UsersManagement = () => {
           </li>
         )}
       </ul>
-      
+
+      {/* Confirmation Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-md text-center w-80">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+              Are you sure you want to {selectedUser?.status === 'active' ? 'disable' : 'enable'} {selectedUser?.name}?
+            </h2>
+            <div className="flex space-x-2 justify-center">
+              <button 
+                onClick={handleToggleUserStatus}
+                className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Confirm
+              </button>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toast notifications */}
       <ToastContainer position="top-center" autoClose={3000} />
     </div>

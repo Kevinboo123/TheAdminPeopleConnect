@@ -19,7 +19,7 @@ function Sidebar() {
       <div 
         className={`${
           isExpanded ? 'w-64' : 'w-20'
-        } bg-violet-800 text-white h-screen flex flex-col fixed transition-all duration-300 ease-in-out`}
+        } bg-violet-800 text-white h-screen flex flex-col fixed transition-all duration-500 ease-in-out`}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
       >
@@ -103,7 +103,7 @@ function Sidebar() {
             <div className="flex space-x-4 justify-center">
               <button 
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
               >
                 Logout
               </button>

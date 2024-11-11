@@ -199,7 +199,7 @@ function Categories() {
                 </button>
                 {/* Delete Category Button */}
                 <button 
-                  className="text-red-500 hover:text-red-700"
+                  className="text-purple-500 hover:text-purple-700"
                   onClick={() => handleDeleteCategory(category.name)}
                 >
                   <FiTrash2 size={20} />

@@ -8,6 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 function Services() {
   const [subCategories, setSubCategories] = useState([]);
   const [filter, setFilter] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
 
   // Fetch all sub-categories
   useEffect(() => {
@@ -36,17 +38,18 @@ function Services() {
   }, []);
 
   // Handle sub-category deletion
-  const handleDeleteSubCategory = async (categoryName, subCategoryId) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete this sub-category?`);
-    if (confirmDelete) {
-      try {
-        const subCategoryRef = ref(database, `category/${categoryName}/Sub Categories/${subCategoryId}`);
-        await remove(subCategoryRef);
-        toast.success('Sub-category deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting sub-category:', error);
-        toast.error('Failed to delete sub-category. Please try again.');
-      }
+  const handleDeleteSubCategory = async () => {
+    if (!selectedSubCategory) return;
+
+    const { categoryName, id } = selectedSubCategory;
+    try {
+      const subCategoryRef = ref(database, `category/${categoryName}/Sub Categories/${id}`);
+      await remove(subCategoryRef);
+      toast.success('Sub-category deleted successfully!');
+      setShowModal(false); // Close the modal after deletion
+    } catch (error) {
+      console.error('Error deleting sub-category:', error);
+      toast.error('Failed to delete sub-category. Please try again.');
     }
   };
 
@@ -96,7 +99,10 @@ function Services() {
                 </div>
                 <button
                   className="text-purple-600 hover:text-purple-700 transition-colors p-2"
-                  onClick={() => handleDeleteSubCategory(subCategory.categoryName, subCategory.id)}
+                  onClick={() => {
+                    setSelectedSubCategory(subCategory);
+                    setShowModal(true);
+                  }}
                 >
                   <FiTrash2 size={20} />
                 </button>
@@ -110,6 +116,31 @@ function Services() {
       {filteredSubCategories.length === 0 && (
         <div className="text-center py-12 bg-white rounded-lg shadow-lg">
           <p className="text-xl text-gray-500">No sub-categories available</p>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-md text-center w-64"> {/* Adjusted width for a smaller modal */}
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+              Are you sure you want to delete {selectedSubCategory?.name}?
+            </h2>
+            <div className="flex space-x-2 justify-center">
+              <button 
+                onClick={handleDeleteSubCategory}
+                className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
