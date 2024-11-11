@@ -11,15 +11,13 @@ function Categories() {
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddSubCategory, setShowAddSubCategory] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const categoryInputRef = useRef(null);
   const subCategoryInputRef = useRef(null);
   const storage = getStorage();
 
-  // Fetch categories from Firebase
+  // Modified to fetch categories with sub-categories from Firebase
   useEffect(() => {
     const categoriesRef = ref(database, 'category');
     onValue(categoriesRef, (snapshot) => {
@@ -36,36 +34,29 @@ function Categories() {
     });
   }, []);
 
-  // Handle image selection
+  // Add handleImageSelect function
   const handleImageSelect = (file) => {
     if (file) {
       setSelectedImage(file);
     }
   };
 
-  // Show delete confirmation modal
-  const handleDeleteCategory = (categoryName) => {
-    setCategoryToDelete(categoryName);
-    setShowDeleteConfirm(true);
-  };
-
-  // Confirm deletion of category
-  const confirmDeleteCategory = async () => {
-    if (categoryToDelete) {
+  // Add handleDeleteCategory function
+  const handleDeleteCategory = async (categoryName) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
+    if (confirmDelete) {
       try {
-        const categoryRef = ref(database, `category/${categoryToDelete}`);
+        const categoryRef = ref(database, `category/${categoryName}`);
         await remove(categoryRef);
         toast.success('Category deleted successfully!');
       } catch (error) {
         console.error('Error deleting category:', error);
         toast.error('Failed to delete category. Please try again.');
       }
-      setShowDeleteConfirm(false);
-      setCategoryToDelete(null);
     }
   };
 
-  // Add category
+  // Modified to add category with proper structure
   const handleAddCategory = async () => {
     const categoryName = categoryInputRef.current.value.trim();
     if (!categoryName || !selectedImage) {
@@ -87,7 +78,7 @@ function Categories() {
 
       await set(existingCategoryRef, {
         image: imageUrl,
-        'Sub Categories': {}
+        'Sub Categories': {} // Ensure the key is correctly formatted
       });
 
       categoryInputRef.current.value = '';
@@ -100,7 +91,7 @@ function Categories() {
     }
   };
 
-  // Add Sub-Category
+  // Modified handleAddSubCategory to fix the name handling
   const handleAddSubCategory = async () => {
     const subCategoryName = subCategoryInputRef.current.value.trim();
     if (!subCategoryName || !selectedImage || !selectedCategory) {
@@ -109,6 +100,7 @@ function Categories() {
     }
 
     try {
+      // Create a URL-friendly version of the name for the key
       const subCategoryKey = subCategoryName.toLowerCase().replace(/\s+/g, '');
       const subCategoryRef = ref(database, `category/${selectedCategory}/Sub Categories/${subCategoryKey}`);
       
@@ -123,7 +115,7 @@ function Categories() {
       const imageUrl = await getDownloadURL(imageRef);
 
       await set(subCategoryRef, {
-        name: subCategoryName,
+        name: subCategoryName, // Store the original name
         image: imageUrl
       });
 
@@ -182,35 +174,9 @@ function Categories() {
     );
   }
 
-  // Delete Confirmation Modal Component
-  function DeleteConfirmationModal({ onClose, onConfirm, categoryName }) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl font-semibold mb-4">Confirm Deletion</h2>
-          <p>Are you sure you want to delete the category "{categoryName}"?</p>
-          <div className="flex justify-end space-x-4 mt-4">
-            <button
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-              onClick={onConfirm}
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-black mb-6">Categories</h1>
+    <div className="p-6 bg-purple-600 min-h-screen">
+      <h1 className="text-2xl font-bold text-white mb-6">Categories</h1>
       <div className="space-y-8">
         {categories.map((category, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-md">
@@ -233,7 +199,7 @@ function Categories() {
                 </button>
                 {/* Delete Category Button */}
                 <button 
-                  className="text-purple-600 hover:text-purple-700"
+                  className="text-red-500 hover:text-red-700"
                   onClick={() => handleDeleteCategory(category.name)}
                 >
                   <FiTrash2 size={20} />
@@ -304,13 +270,6 @@ function Categories() {
           selectedImage={selectedImage}
           handleImageSelect={handleImageSelect}
           categoryName={selectedCategory}
-        />
-      )}
-      {showDeleteConfirm && (
-        <DeleteConfirmationModal
-          onClose={() => setShowDeleteConfirm(false)}
-          onConfirm={confirmDeleteCategory}
-          categoryName={categoryToDelete}
         />
       )}
       <ToastContainer position="top-center" autoClose={3000} />
