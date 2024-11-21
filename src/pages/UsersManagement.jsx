@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MoreVertical, Trash2 } from 'react-feather';
 import { database } from '../firebase/firebaseConfig';
-import { ref, onValue, update, get } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 const UsersManagement = () => {
   const [clients, setClients] = useState([]);
@@ -14,15 +15,17 @@ const UsersManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    // Fetch clients from 'users' node
-    const clientsRef = ref(database, 'users');
-    onValue(clientsRef, (snapshot) => {
+    // Fetch users from 'users' node
+    const usersRef = ref(database, 'users');
+    onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
       const clientsArray = [];
+      const providersArray = [];
 
       if (data) {
         Object.entries(data).forEach(([id, userData]) => {
-          if (!userData.userType || userData.userType === 'client') {
+          // Check roles to categorize users
+          if (userData.roles && userData.roles.includes('Client')) {
             clientsArray.push({
               id,
               name: userData.name || 'No Name',
@@ -33,35 +36,25 @@ const UsersManagement = () => {
               status: userData.status || 'active',
             });
           }
+          if (userData.roles && userData.roles.includes('Service Provider')) {
+            providersArray.push({
+              id,
+              name: userData.name || 'No Name',
+              email: userData.email || 'No Email',
+              phoneNumber: userData.phoneNumber || 'No Phone',
+              profileImageUrl: userData.profileImageUrl || null,
+              userType: 'service provider',
+              services: userData.services || [],
+              rating: userData.rating || 0,
+              reviews: userData.reviews || [],
+              status: userData.status || 'active',
+            });
+          }
         });
         setClients(clientsArray);
-        console.log('Clients:', clientsArray);
-      }
-    });
-
-    // Fetch service providers from both 'users' and 'serviceProviders' nodes
-    const spRef = ref(database, 'serviceProviders');
-    onValue(spRef, (snapshot) => {
-      const spData = snapshot.val();
-      const providersArray = [];
-      
-      if (spData) {
-        Object.entries(spData).forEach(([id, userData]) => {
-          providersArray.push({
-            id,
-            name: userData.name || 'No Name',
-            email: userData.email || 'No Email',
-            phoneNumber: userData.phoneNumber || 'No Phone',
-            profileImageUrl: userData.profileImageUrl || null,
-            userType: 'service provider',
-            services: userData.services || [],
-            rating: userData.rating || 0,
-            reviews: userData.reviews || [],
-            status: userData.status || 'active',
-          });
-        });
         setServiceProviders(providersArray);
-        console.log('Service Providers:', providersArray);
+        console.log('Fetched Clients:', clientsArray.length);
+        console.log('Fetched Service Providers:', providersArray.length);
       }
     });
   }, []);
@@ -79,12 +72,32 @@ const UsersManagement = () => {
       // Update user status
       const newStatus = selectedUser.status === 'active' ? 'disabled' : 'active';
       await update(userRef, { status: newStatus });
-      toast.success(`${selectedUser.name} has been ${newStatus === 'disabled' ? 'disabled' : 'enabled'} successfully`);
+
+      // Disable user authentication if the user is being disabled
+      if (newStatus === 'disabled') {
+        await disableUserInAuth(selectedUser.id); // Call to disable user in Firebase Auth
+      }
+
+      // Show toast notification only when enabling a user
+      if (newStatus === 'active') {
+        toast.success(`${selectedUser.name} has been enabled successfully`);
+      }
+      
       setShowModal(false); // Close the modal after status change
       setShowMenu(null); // Close the menu after status change
     } catch (error) {
       console.error('Error toggling user status:', error);
-      toast.error('Failed to change user status');
+      toast.error('Failed to change user status'); // Keep this for error handling
+    }
+  };
+
+  // Function to disable user in Firebase Authentication
+  const disableUserInAuth = async (userId) => {
+    try {
+      await axios.post('/disableUser', { userId }); // Ensure this endpoint is set up on your server
+    } catch (error) {
+      console.error('Error disabling user in auth:', error);
+      toast.error('Failed to disable user in authentication');
     }
   };
 
