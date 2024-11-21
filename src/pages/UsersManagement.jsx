@@ -33,7 +33,7 @@ const UsersManagement = () => {
               phoneNumber: userData.phoneNumber || 'No Phone',
               profileImageUrl: userData.profileImageUrl || null,
               userType: 'client',
-              status: userData.status || 'active',
+              status: userData.status === 'active' ? 'active' : 'inactive',
             });
           }
           if (userData.roles && userData.roles.includes('Service Provider')) {
@@ -47,7 +47,7 @@ const UsersManagement = () => {
               services: userData.services || [],
               rating: userData.rating || 0,
               reviews: userData.reviews || [],
-              status: userData.status || 'active',
+              status: userData.status === 'active' ? 'active' : 'inactive',
             });
           }
         });
@@ -70,12 +70,14 @@ const UsersManagement = () => {
       const userRef = ref(database, `${path}/${selectedUser.id}`);
       
       // Update user status
-      const newStatus = selectedUser.status === 'active' ? 'disabled' : 'active';
+      const newStatus = selectedUser.status === 'active' ? 'inactive' : 'active';
       await update(userRef, { status: newStatus });
 
       // Disable user authentication if the user is being disabled
-      if (newStatus === 'disabled') {
+      if (newStatus === 'inactive') {
         await disableUserInAuth(selectedUser.id); // Call to disable user in Firebase Auth
+        // Removed the toast notification for disabling a user
+        // toast.success(`${selectedUser.name} has been disabled successfully`); // Notify user of successful disable
       }
 
       // Show toast notification only when enabling a user
@@ -86,8 +88,7 @@ const UsersManagement = () => {
       setShowModal(false); // Close the modal after status change
       setShowMenu(null); // Close the menu after status change
     } catch (error) {
-      console.error('Error toggling user status:', error);
-      toast.error('Failed to change user status'); // Keep this for error handling
+      // Removed error handling
     }
   };
 

@@ -7,17 +7,22 @@ function LoginPage() {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (login === 'admin' && password === '123') {
-      navigate('/dashboard');
-    } else {
-      setError('Invalid username or password');
-    }
+    setTimeout(() => {
+      if (login === 'admin' && password === '123') {
+        navigate('/dashboard');
+      } else {
+        setError('Invalid username or password');
+      }
+      setLoading(false);
+    }, 3000);
   };
 
   return (
@@ -62,9 +67,10 @@ function LoginPage() {
           
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50 bold_poppins"
+            disabled={loading}
+            className={`w-full py-2 px-4 ${loading ? 'bg-gray-400' : 'bg-purple-600'} text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50 bold_poppins`}
           >
-            Login
+            {loading ? 'Logging In...' : 'Login'}
           </button>
         </form>
       </div>
