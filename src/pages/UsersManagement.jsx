@@ -45,7 +45,7 @@ const UsersManagement = () => {
       const path = selectedUser.userType === 'client' ? 'users' : 'serviceProviders';
       const userRef = ref(database, `${path}/${selectedUser.id}`);
       
-      await disableUserInAuth(selectedUser.id);
+      await disableUserInAuth(selectedUser.email);
       await update(userRef, { status: 'disabled' });
 
       setShowModal(false);
@@ -57,9 +57,9 @@ const UsersManagement = () => {
     }
   };
 
-  const disableUserInAuth = async (userId) => {
+  const disableUserInAuth = async (email) => {
     try {
-      const response = await axios.post('/disableUser', { userId });
+      const response = await axios.post('/disableUser', { email });
       if (response.status !== 200) {
         throw new Error('Failed to disable user in authentication');
       }
