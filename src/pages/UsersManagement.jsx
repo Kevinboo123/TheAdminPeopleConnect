@@ -16,7 +16,7 @@ const UsersManagement = () => {
 
   useEffect(() => {
     const usersRef = ref(database, 'users');
-    onValue(usersRef, (snapshot) => {
+    const unsubscribe = onValue(usersRef, (snapshot) => {
       const data = snapshot.val();
       const clientsArray = [];
       const providersArray = [];
@@ -34,6 +34,8 @@ const UsersManagement = () => {
         setServiceProviders(providersArray);
       }
     });
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
   }, []);
 
   const displayUsers = userType === 'client' ? clients : serviceProviders;
@@ -59,7 +61,7 @@ const UsersManagement = () => {
 
   const disableUserInAuth = async (email) => {
     try {
-      const response = await axios.post('/disableUser', { email });
+      const response = await axios.post('/api/disableUser', { email }); // Ensure the correct API route
       if (response.status !== 200) {
         throw new Error('Failed to disable user in authentication');
       }
