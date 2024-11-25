@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'react-feather';
 import { useNavigate } from 'react-router-dom';
+import { FaSpinner } from 'react-icons/fa'; // Import the spinner icon
 import dashboardLogo from '../assets/DashBoardLogo.png'; // Make sure the path is correct
 
 function LoginPage() {
@@ -68,9 +69,9 @@ function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 ${loading ? 'bg-gray-400' : 'bg-purple-600'} text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50 bold_poppins`}
+            className={`w-full py-2 px-4 ${loading ? 'bg-purple-400' : 'bg-purple-600'} text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50 bold_poppins flex items-center justify-center`}
           >
-            {loading ? 'Logging In...' : 'Login'}
+            {loading ? <FaSpinner className="animate-spin" /> : 'Login'}
           </button>
         </form>
       </div>
