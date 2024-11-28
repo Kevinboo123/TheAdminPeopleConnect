@@ -44,10 +44,11 @@ const UsersManagement = () => {
     if (!selectedUser) return;
 
     try {
+      console.log('Disabling user with email:', selectedUser.email);
+      await disableUserInAuth(selectedUser.email);
       const path = selectedUser.userType === 'client' ? 'users' : 'serviceProviders';
       const userRef = ref(database, `${path}/${selectedUser.id}`);
       
-      await disableUserInAuth(selectedUser.email);
       await update(userRef, { status: 'disabled' });
 
       setShowModal(false);
@@ -61,13 +62,13 @@ const UsersManagement = () => {
 
   const disableUserInAuth = async (email) => {
     try {
-      const response = await axios.post('/api/disableUser', { email }); // Ensure the correct API route
+      const response = await axios.post('/api/disableUser', { email });
       if (response.status !== 200) {
         throw new Error('Failed to disable user in authentication');
       }
     } catch (error) {
       console.error('Error disabling user in auth:', error);
-      toast.error(`Failed to disable user in authentication: ${error.message}`);
+      toast.error(`Failed to disable user in authentication: ${error.response?.data?.message || error.message}`);
     }
   };
 

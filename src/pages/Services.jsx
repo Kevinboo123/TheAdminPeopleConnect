@@ -64,7 +64,7 @@ function Services() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-black mb-6">Sub-Categories Management</h1>
+      <h1 className="text-2xl font-bold text-black mb-6">Service Management</h1>
       
       {/* Category Selection Dropdown */}
       <select

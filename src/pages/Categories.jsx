@@ -130,7 +130,7 @@ function Categories() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-bold text-black mb-6">Categories</h1>
+      <h1 className="text-2xl font-bold text-black mb-6">Categories Management</h1>
       <div className="space-y-8">
         {categories.map((category, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
