@@ -45,9 +45,7 @@ const UsersManagement = () => {
 
     try {
       console.log('Disabling user with email:', selectedUser.email);
-      await disableUserInAuth(selectedUser.email);
-      const path = selectedUser.userType === 'client' ? 'users' : 'serviceProviders';
-      const userRef = ref(database, `${path}/${selectedUser.id}`);
+      const userRef = ref(database, `users/${selectedUser.id}`);
       
       await update(userRef, { status: 'disabled' });
 
@@ -60,15 +58,21 @@ const UsersManagement = () => {
     }
   };
 
-  const disableUserInAuth = async (email) => {
+  const handleEnableUserStatus = async () => {
+    if (!selectedUser) return;
+
     try {
-      const response = await axios.post('/api/disableUser', { email });
-      if (response.status !== 200) {
-        throw new Error('Failed to disable user in authentication');
-      }
+      console.log('Enabling user with email:', selectedUser.email);
+      const userRef = ref(database, `users/${selectedUser.id}`);
+      
+      await update(userRef, { status: 'enabled' });
+
+      setShowModal(false);
+      setShowMenu(null);
+      toast.success(`${selectedUser.name} has been enabled successfully`);
     } catch (error) {
-      console.error('Error disabling user in auth:', error);
-      toast.error(`Failed to disable user in authentication: ${error.response?.data?.message || error.message}`);
+      console.error('Error toggling user status:', error);
+      toast.error(`Failed to change user status: ${error.message}`);
     }
   };
 
@@ -112,10 +116,17 @@ const UsersManagement = () => {
                 </button>
                 {showMenu === user.id && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                    <button onClick={() => { setSelectedUser(user); setShowModal(true); }} className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50">
-                      <Trash2 size={16} className="mr-2" />
-                      Disable User
-                    </button>
+                    {user.status === 'disabled' ? (
+                      <button onClick={() => { setSelectedUser(user); setShowModal(true); }} className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50">
+                        <Trash2 size={16} className="mr-2" />
+                        Enable User
+                      </button>
+                    ) : (
+                      <button onClick={() => { setSelectedUser(user); setShowModal(true); }} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                        <Trash2 size={16} className="mr-2" />
+                        Disable User
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -129,9 +140,17 @@ const UsersManagement = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded-lg shadow-md text-center w-80">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">Are you sure you want to disable {selectedUser?.name}?</h2>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+              {selectedUser?.status === 'disabled' 
+                ? `Are you sure you want to enable ${selectedUser?.name}?` 
+                : `Are you sure you want to disable ${selectedUser?.name}?`}
+            </h2>
             <div className="flex space-x-2 justify-center">
-              <button onClick={handleToggleUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Confirm</button>
+              {selectedUser?.status === 'disabled' ? (
+                <button onClick={handleEnableUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Enable</button>
+              ) : (
+                <button onClick={handleToggleUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Disable</button>
+              )}
               <button onClick={() => setShowModal(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">Cancel</button>
             </div>
           </div>

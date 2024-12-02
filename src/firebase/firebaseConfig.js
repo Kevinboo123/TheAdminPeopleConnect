@@ -23,3 +23,5 @@ const auth = getAuth(app); // Initialize Firebase Authentication
 
 // Export the initialized instances
 export { database, auth, analytics };
+
+
