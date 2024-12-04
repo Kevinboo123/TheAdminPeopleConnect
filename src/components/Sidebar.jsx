@@ -28,7 +28,7 @@ function Sidebar() {
             src={dashboardlogo} 
             alt="Project Logo" 
             className={`transition-all duration-300 ${
-              isExpanded ? 'w-24 h-24' : 'w-12 h-12'
+              isExpanded ? 'w-24 h-24' : 'w-10 h-10'
             }`}
           />
         </div>

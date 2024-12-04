@@ -78,7 +78,7 @@ const UsersManagement = () => {
 
   return (
     <div className="users-management p-6">
-      <h2 className="users-management__title text-2xl font-bold mb-4">User Information</h2>
+      <h2 className="users-management__title text-2xl text-purple-600 font-bold mb-4">User Information</h2>
       <div className="flex gap-4 mb-6">
         <button onClick={() => setUserType('client')} className={`px-6 py-2 rounded-lg font-medium ${userType === 'client' ? 'bg-violet-800 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
           Client ({clients.length})
@@ -149,7 +149,7 @@ const UsersManagement = () => {
               {selectedUser?.status === 'disabled' ? (
                 <button onClick={handleEnableUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Enable</button>
               ) : (
-                <button onClick={handleToggleUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Disable</button>
+                <button onClick={handleToggleUserStatus} className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Disable</button>
               )}
               <button onClick={() => setShowModal(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">Cancel</button>
             </div>

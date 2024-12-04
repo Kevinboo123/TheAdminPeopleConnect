@@ -135,7 +135,7 @@ function PostManagement() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-bold text-black mb-6">Post Management</h1>
+      <h1 className="text-2xl font-bold text-purple-600 text-black mb-6">Post Management</h1>
       
       {/* Button to scan pending posts */}
       <button 

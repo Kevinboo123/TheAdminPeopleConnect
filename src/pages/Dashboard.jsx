@@ -100,7 +100,7 @@ function Dashboard() {
   return (
     <div className="p-10 bg-gray-100 h-full">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-black">Overview</h1>
+        <h1 className="text-2xl font-bold text-purple-600  text-black">Overview</h1>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <input

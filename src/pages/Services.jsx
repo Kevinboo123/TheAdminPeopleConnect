@@ -64,7 +64,7 @@ function Services() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-black mb-6">Service Management</h1>
+      <h1 className="text-2xl font-bold text-purple-600 text-black mb-6">Service Management</h1>
       
       {/* Category Selection Dropdown */}
       <select
@@ -105,7 +105,7 @@ function Services() {
                   </p>
                 </div>
                 <button
-                  className="text-purple-600 hover:text-purple-700 transition-colors p-2"
+                  className="text-red-600 hover:text-red-700 transition-colors p-2"
                   onClick={() => {
                     setSelectedSubCategory(subCategory);
                     setShowModal(true);
@@ -136,7 +136,7 @@ function Services() {
             <div className="flex space-x-2 justify-center">
               <button 
                 onClick={handleDeleteSubCategory}
-                className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 Delete
               </button>

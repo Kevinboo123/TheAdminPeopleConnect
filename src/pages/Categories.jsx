@@ -16,6 +16,8 @@ function Categories() {
   const categoryInputRef = useRef(null);
   const subCategoryInputRef = useRef(null);
   const storage = getStorage();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   // Fetch categories with sub-categories from Firebase
   useEffect(() => {
@@ -42,17 +44,18 @@ function Categories() {
   };
 
   // Handle category deletion
-  const handleDeleteCategory = async (categoryName) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${categoryName}?`);
-    if (confirmDelete) {
+  const confirmDeleteCategory = async () => {
+    if (categoryToDelete) {
       try {
-        const categoryRef = ref(database, `category/${categoryName}`);
+        const categoryRef = ref(database, `category/${categoryToDelete}`);
         await remove(categoryRef);
         toast.success('Category deleted successfully!');
       } catch (error) {
         console.error('Error deleting category:', error);
         toast.error('Failed to delete category. Please try again.');
       }
+      setShowDeleteConfirm(false);
+      setCategoryToDelete(null);
     }
   };
 
@@ -130,7 +133,7 @@ function Categories() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-bold text-black mb-6">Categories Management</h1>
+      <h1 className="text-2xl font-bold text-purple-600  text-black mb-6">Categories Management</h1>
       <div className="space-y-8">
         {categories.map((category, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
@@ -153,8 +156,11 @@ function Categories() {
                 </button>
                 {/* Delete Category Button */}
                 <button 
-                  className="text-purple-500 hover:text-purple-700"
-                  onClick={() => handleDeleteCategory(category.name)}
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => {
+                    setCategoryToDelete(category.name);
+                    setShowDeleteConfirm(true);
+                  }}
                 >
                   <FiTrash2 size={20} />
                 </button>
@@ -226,6 +232,13 @@ function Categories() {
           categoryName={selectedCategory}
         />
       )}
+      {showDeleteConfirm && (
+        <DeleteConfirmModal
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={confirmDeleteCategory}
+          categoryName={categoryToDelete}
+        />
+      )}
       <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
@@ -268,6 +281,32 @@ function AddSubCategoryModal({ onClose, onAdd, subCategoryInputRef, selectedImag
             onClick={onAdd}
           >
             Add Sub-Category
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Delete Confirmation Modal Component
+function DeleteConfirmModal({ onClose, onConfirm, categoryName }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
+        <p className="font-semibold">Are you sure you want to delete the category "{categoryName}"?</p>
+        <div className="flex justify-end space-x-4 mt-4">
+          <button
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            onClick={onConfirm}
+          >
+            Delete
           </button>
         </div>
       </div>

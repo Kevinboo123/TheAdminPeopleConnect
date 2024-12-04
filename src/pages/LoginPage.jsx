@@ -27,8 +27,8 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
+    <div className="min-h-screen flex items-center justify-center bg-gradient p-4">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
         <div className="flex justify-center mb-6">
           <img 
             src={dashboardLogo} 
@@ -37,7 +37,7 @@ function LoginPage() {
           />
         </div>
         
-        <h1 className="text-center text-black text-2xl font-bold mb-4 bold_poppins">PEOPLE CONNECT</h1>
+        <h1 className="text-center text-purple-600 text-4xl font-bold mb-4 bold_poppins">PeopleConnect</h1>
         
         <p className="text-center text-purple-600 text-sm mb-4 bold_poppins">ADMIN</p>
 
