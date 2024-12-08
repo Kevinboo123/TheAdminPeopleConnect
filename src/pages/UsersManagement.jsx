@@ -26,11 +26,19 @@ const UsersManagement = () => {
 
       if (data) {
         Object.entries(data).forEach(([id, userData]) => {
-          if (userData.roles && userData.roles.includes('Client')) {
-            clientsArray.push({ id, ...userData, userType: 'client' });
-          }
-          if (userData.roles && userData.roles.includes('Service Provider')) {
-            providersArray.push({ id, ...userData, userType: 'service provider' });
+          const userWithStatus = {
+            ...userData,
+            id,
+            status: userData.status || 'enabled'
+          };
+
+          if (userData.roles) {
+            if (userData.roles.includes('Client')) {
+              clientsArray.push({ ...userWithStatus, userType: 'client' });
+            }
+            if (userData.roles.includes('Service Provider')) {
+              providersArray.push({ ...userWithStatus, userType: 'service provider' });
+            }
           }
         });
         setClients(clientsArray);
@@ -38,7 +46,7 @@ const UsersManagement = () => {
       }
     });
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   const displayUsers = userType === 'client' ? clients : serviceProviders;
@@ -115,6 +123,11 @@ const UsersManagement = () => {
                   {user.userType === 'service provider' && (
                     <span className="text-xs text-violet-600">Rating: {user.rating || 'No ratings yet'}</span>
                   )}
+                  <span className={`text-xs ${
+                    user.status === 'disabled' ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    Status: {user.status === 'disabled' ? 'Disabled' : 'Active'}
+                  </span>
                 </div>
               </div>
               <div className="relative">
@@ -123,17 +136,17 @@ const UsersManagement = () => {
                 </button>
                 {showMenu === user.id && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                    {user.status === 'disabled' ? (
-                      <button onClick={() => { setSelectedUser(user); setShowModal(true); }} className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50">
-                        <Trash2 size={16} className="mr-2" />
-                        Enable User
-                      </button>
-                    ) : (
-                      <button onClick={() => { setSelectedUser(user); setShowModal(true); }} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                        <Trash2 size={16} className="mr-2" />
-                        Disable User
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => { setSelectedUser(user); setShowModal(true); }} 
+                      className={`flex items-center w-full px-4 py-2 text-sm ${
+                        user.status === 'disabled' 
+                          ? 'text-purple-600 hover:bg-purple-50' 
+                          : 'text-red-600 hover:bg-red-50'
+                      }`}
+                    >
+                      <Trash2 size={16} className="mr-2" />
+                      {user.status === 'disabled' ? 'Enable User' : 'Disable User'}
+                    </button>
                   </div>
                 )}
               </div>
@@ -156,7 +169,7 @@ const UsersManagement = () => {
               {selectedUser?.status === 'disabled' ? (
                 <button onClick={handleEnableUserStatus} className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Enable</button>
               ) : (
-                <button onClick={handleToggleUserStatus} className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Disable</button>
+                <button onClick={handleToggleUserStatus} className="bg-red-500 hovergit:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">Disable</button>
               )}
               <button onClick={() => setShowModal(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors">Cancel</button>
             </div>
