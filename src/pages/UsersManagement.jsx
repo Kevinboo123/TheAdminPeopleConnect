@@ -6,6 +6,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
+// Default avatar as a data URI
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
+
 const UsersManagement = () => {
   const [clients, setClients] = useState([]);
   const [serviceProviders, setServiceProviders] = useState([]);
@@ -94,13 +97,17 @@ const UsersManagement = () => {
             <li key={user.id} className="users-list__item flex items-center justify-between p-4 border-b last:border-b-0 relative">
               <div className="flex items-center">
                 <div className="users-list__avatar w-10 h-10 rounded-full overflow-hidden mr-3">
-                  {user.profileImageUrl ? (
-                    <img src={user.profileImageUrl} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="bg-gray-300 w-full h-full flex items-center justify-center">
-                      <span className="text-gray-500">N/A</span>
-                    </div>
-                  )}
+                  <div className="bg-violet-600 w-full h-full flex items-center justify-center">
+                    <img 
+                      src={user.profileImageUrl || DEFAULT_AVATAR} 
+                      alt={user.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = DEFAULT_AVATAR;
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col">
                   <span className="users-list__name font-medium">{user.name}</span>

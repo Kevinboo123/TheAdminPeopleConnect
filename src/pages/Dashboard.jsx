@@ -1,39 +1,124 @@
-import React, { useState } from 'react';
-import { Bell, Search, User, Settings, X } from 'react-feather';
+import React, { useState, useEffect } from 'react';
+import { User, Settings, Users } from 'react-feather';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  ArcElement
+} from 'chart.js';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { database } from '../firebase/firebaseConfig';
+import { ref, onValue } from 'firebase/database';
+import { useNavigate } from 'react-router-dom';
+
+// Default avatar as a data URI
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 function Dashboard() {
+  console.log('Dashboard component rendering');
+  const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: 'New user registration',
-      time: '5 minutes ago',
-      isRead: false,
-    },
-    {
-      id: 2,
-      message: 'System update completed',
-      time: '1 hour ago',
-      isRead: false,
-    },
-    {
-      id: 3,
-      message: 'New service request',
-      time: '2 hours ago',
-      isRead: false,
-    },
-  ]);
 
   const [profileData, setProfileData] = useState({
     name: 'Kevin Apiag',
     email: 'kevin.apiag@example.com',
     phone: '+1234567890',
     role: 'Admin',
-    image: '/path/to/your/image.png' // Update this path to your admin profile image
+    image: DEFAULT_AVATAR
   });
+
+  const [userStats, setUserStats] = useState({
+    serviceProviders: 0,
+    clients: 0
+  });
+
+  const [bookingStats, setBookingStats] = useState({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    data: [12, 19, 15, 25, 22, 30, 28]
+  });
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    // Fetch user statistics from Firebase
+    const usersRef = ref(database, 'users');
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+      const data = snapshot.val();
+      let serviceProvidersCount = 0;
+      let clientsCount = 0;
+
+      if (data) {
+        Object.values(data).forEach((userData) => {
+          if (userData.roles) {
+            if (userData.roles.includes('Service Provider')) {
+              serviceProvidersCount++;
+            }
+            if (userData.roles.includes('Client')) {
+              clientsCount++;
+            }
+          }
+        });
+      }
+
+      setUserStats({
+        serviceProviders: serviceProvidersCount,
+        clients: clientsCount
+      });
+    });
+
+    // Fetch booking statistics
+    const fetchBookingStats = async () => {
+      try {
+        const response = await fetch('/api/booking-statistics');
+        const data = await response.json();
+        setBookingStats(data);
+      } catch (error) {
+        console.error('Failed to fetch booking statistics:', error);
+      }
+    };
+
+    fetchBookingStats();
+
+    // Fetch categories from Firebase
+    const categoriesRef = ref(database, 'categories');
+    const categoriesUnsubscribe = onValue(categoriesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const categoriesArray = Object.entries(data)
+          .map(([id, category]) => ({
+            id,
+            ...category
+          }))
+          .slice(0, 5);
+        setCategories(categoriesArray);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      categoriesUnsubscribe();
+    }
+  }, []);
 
   const handleProfileClick = () => {
     setShowProfileModal(true);
@@ -63,10 +148,15 @@ function Dashboard() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file); // Create a URL for the selected image
+      const imageUrl = URL.createObjectURL(file);
       setProfileData({
         ...profileData,
-        image: imageUrl // Update the image in profileData
+        image: imageUrl
+      });
+    } else {
+      setProfileData({
+        ...profileData,
+        image: DEFAULT_AVATAR
       });
     }
   };
@@ -77,116 +167,20 @@ function Dashboard() {
     setShowSettingsModal(false);
   };
 
-  // Handle notification click
-  const handleNotificationClick = (id) => {
-    setNotifications(notifications.map(notif => 
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ));
-  };
-
-  // Clear all notifications
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  // Mark all as read
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
-  };
-
-  // Get unread count
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
   return (
     <div className="p-10 bg-gray-100 h-full">
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-purple-600  text-black">Overview</h1>
+        <h1 className="text-2xl font-bold text-purple-600 text-black">Overview</h1>
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search"
-              className="pl-10 pr-4 py-2 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-          </div>
-          <div className="relative">
-            <button 
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                setShowProfileMenu(false);
-              }}
-              className="relative"
-            >
-              <Bell size={20} className="text-purple-600 cursor-pointer" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-50">
-                <div className="flex justify-between items-center px-4 py-2 border-b">
-                  <h3 className="font-semibold">Notifications</h3>
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={markAllAsRead}
-                      className="text-xs text-violet-600 hover:text-violet-800"
-                    >
-                      Mark all as read
-                    </button>
-                    <button 
-                      onClick={clearAllNotifications}
-                      className="text-xs text-red-600 hover:text-red-800"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                      <div 
-                        key={notification.id}
-                        onClick={() => handleNotificationClick(notification.id)}
-                        className={`px-4 py-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                          !notification.isRead ? 'bg-violet-50' : ''
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className={`text-sm ${!notification.isRead ? 'font-semibold' : ''}`}>
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                          </div>
-                          {!notification.isRead && (
-                            <span className="w-2 h-2 bg-violet-600 rounded-full"></span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-3 text-center text-gray-500 text-sm">
-                      No notifications
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
           <div className="relative">
             <button 
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-3 focus:outline-none"
             >
               <img 
-                src={profileData.image} // Use the image from profileData
+                src={profileData.image} 
                 alt="User" 
-                className="w-10 h-10 rounded-full border-2 border-violet-600"
+                className="w-10 h-10 rounded-full border-2 border-violet-600 bg-violet-600 object-cover"
               />
               <div className="hidden md:block text-left">
                 <p className="text-sm font-semibold">{profileData.name}</p>
@@ -339,9 +333,145 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Dashboard Content</h2>
-        <p>Add your dashboard widgets and content here.</p>
+      {/* Dashboard Content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* User Statistics */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">User Statistics</h2>
+            <button
+              onClick={() => navigate('/users')}
+              className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+            >
+              <Users size={18} />
+              <span>Manage Users</span>
+            </button>
+          </div>
+          <Bar
+            data={{
+              labels: ['Service Providers', 'Clients'],
+              datasets: [
+                {
+                  label: 'Number of Users',
+                  data: [userStats.serviceProviders, userStats.clients],
+                  backgroundColor: [
+                    'rgba(147, 51, 234, 0.8)', // Purple for Service Providers
+                    'rgba(59, 130, 246, 0.8)', // Blue for Clients
+                  ],
+                  borderColor: [
+                    'rgba(147, 51, 234, 1)',
+                    'rgba(59, 130, 246, 1)',
+                  ],
+                  borderWidth: 1,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: 'User Distribution'
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 1,
+                    precision: 0
+                  }
+                }
+              }
+            }}
+          />
+        </div>
+
+        {/* Daily Bookings */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Daily Bookings</h2>
+          <Line
+            data={{
+              labels: bookingStats.labels,
+              datasets: [
+                {
+                  label: 'Number of Bookings',
+                  data: bookingStats.data,
+                  fill: false,
+                  borderColor: 'rgba(147, 51, 234, 1)',
+                  tension: 0.1,
+                  pointBackgroundColor: 'rgba(147, 51, 234, 1)',
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: 'Bookings This Week'
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    stepSize: 5
+                  }
+                }
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Categories Section */}
+      <div className="mt-6">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Categories</h2>
+            <button
+              onClick={() => navigate('/categories')}
+              className="flex items-center gap-2 px-4 py-2 text-violet-600 hover:text-violet-700 transition-colors"
+            >
+              <span>View All</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((category) => (
+              <div 
+                key={category.id}
+                className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center mr-4">
+                  <img
+                    src={category.imageUrl || DEFAULT_AVATAR}
+                    alt={category.name}
+                    className="w-8 h-8 object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = DEFAULT_AVATAR;
+                    }}
+                  />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">{category.name}</h3>
+                </div>
+              </div>
+            ))}
+            {categories.length === 0 && (
+              <div className="col-span-full text-center py-4 text-gray-500">
+                No categories available
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
