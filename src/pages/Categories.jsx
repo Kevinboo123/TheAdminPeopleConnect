@@ -201,23 +201,27 @@ function Categories() {
 
         {/* Add Category Button */}
         <div 
-          className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
+          className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
           onClick={() => setShowAddCategory(true)}
         >
-          <FaPlus size={40} className="text-gray-400" />
-          <span className="ml-2 text-gray-600 font-semibold">ADD CATEGORY</span>
+          <div className="flex items-center justify-center space-x-2">
+            <FaPlus size={24} className="text-[#6B46C1]" />
+            <span className="text-[#6B46C1] font-semibold">ADD CATEGORY</span>
+          </div>
         </div>
       </div>
 
       {/* Modals */}
       {showAddCategory && (
-        <AddCategoryModal
-          onClose={() => setShowAddCategory(false)}
-          onAdd={handleAddCategory}
-          categoryInputRef={categoryInputRef}
-          selectedImage={selectedImage}
-          handleImageSelect={handleImageSelect}
-        />
+        <div className="relative">
+          <AddCategoryModal
+            onClose={() => setShowAddCategory(false)}
+            onAdd={handleAddCategory}
+            categoryInputRef={categoryInputRef}
+            selectedImage={selectedImage}
+            handleImageSelect={handleImageSelect}
+          />
+        </div>
       )}
       {showAddSubCategory && (
         <AddSubCategoryModal
@@ -240,6 +244,50 @@ function Categories() {
         />
       )}
       <ToastContainer position="top-center" autoClose={3000} />
+    </div>
+  );
+}
+
+// Add Category Modal Component
+function AddCategoryModal({ onClose, onAdd, categoryInputRef, selectedImage, handleImageSelect }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
+        <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
+        <input
+          ref={categoryInputRef}
+          type="text"
+          placeholder="Enter category name"
+          className="w-full p-2 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleImageSelect(e.target.files[0])}
+          className="w-full mb-4 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+        />
+        {selectedImage && (
+          <img
+            src={URL.createObjectURL(selectedImage)}
+            alt="Selected"
+            className="w-32 h-32 object-cover rounded mb-4"
+          />
+        )}
+        <div className="flex justify-end space-x-4">
+          <button
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-[#6B46C1] text-white rounded hover:bg-[#553C9A] transition-colors"
+            onClick={onAdd}
+          >
+            Add Category
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
