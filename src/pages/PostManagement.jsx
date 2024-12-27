@@ -148,7 +148,7 @@ function PostManagement() {
     };
 
     for (const [index, imageUrl] of post.postImages.entries()) {
-      const proxyUrl = `https://proxy-image-server-wx12.onrender.com/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const proxyUrl = `https://proxy-image-server-faar.onrender.com/proxy-image?url=${encodeURIComponent(imageUrl)}`;
 
       const img = new Image();
       img.src = proxyUrl;
