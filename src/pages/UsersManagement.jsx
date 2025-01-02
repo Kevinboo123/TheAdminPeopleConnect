@@ -126,7 +126,7 @@ const UsersManagement = () => {
                   <span className={`text-xs ${
                     user.status === 'disabled' ? 'text-red-600' : 'text-green-600'
                   }`}>
-                    Status: {user.status === 'disabled' ? 'Disabled' : 'Active'}
+                    Status: {user.status === 'disabled' ? 'Deactivate' : 'Active'}
                   </span>
                 </div>
               </div>
@@ -145,7 +145,7 @@ const UsersManagement = () => {
                       }`}
                     >
                       <Trash2 size={16} className="mr-2" />
-                      {user.status === 'disabled' ? 'Enable User' : 'Disable User'}
+                      {user.status === 'disabled' ? 'Activated User' : 'Deactivated User'}
                     </button>
                   </div>
                 )}
