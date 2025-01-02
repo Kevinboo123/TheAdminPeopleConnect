@@ -62,7 +62,7 @@ const UsersManagement = () => {
 
       setShowModal(false);
       setShowMenu(null);
-      toast.success(`${selectedUser.name} has been disabled successfully`);
+      toast.success(`${selectedUser.name} has been Deactivated successfully`);
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error(`Failed to change user status: ${error.message}`);
@@ -80,7 +80,7 @@ const UsersManagement = () => {
 
       setShowModal(false);
       setShowMenu(null);
-      toast.success(`${selectedUser.name} has been enabled successfully`);
+      toast.success(`${selectedUser.name} has been Activated successfully`);
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error(`Failed to change user status: ${error.message}`);
@@ -162,8 +162,8 @@ const UsersManagement = () => {
           <div className="bg-white p-4 rounded-lg shadow-md text-center w-80">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">
               {selectedUser?.status === 'disabled' 
-                ? `Are you sure you want to enable ${selectedUser?.name}?` 
-                : `Are you sure you want to disable ${selectedUser?.name}?`}
+                ? `Are you sure you want to Activated ${selectedUser?.name}?` 
+                : `Are you sure you want to Deactivated ${selectedUser?.name}?`}
             </h2>
             <div className="flex space-x-2 justify-center">
               {selectedUser?.status === 'disabled' ? (
